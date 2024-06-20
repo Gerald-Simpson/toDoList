@@ -10,8 +10,8 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT;
 
-app.get('/', async (req: Request, res: Response) => {
-  res.json({ data: 'Hello World! TEST!' });
+app.get('/fetchLists/:cookieId?', async (req: Request, res: Response) => {
+  res.json({ data: 'Hello World! Your cookieId is: ' + req.params.cookieId });
 });
 
 app.listen(port, () => {

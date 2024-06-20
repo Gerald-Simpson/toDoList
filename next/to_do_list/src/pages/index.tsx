@@ -11,12 +11,18 @@ type toDoData = {
 
 export const getServerSideProps = (async (context) => {
   let cookieId = context.req.cookies.id;
-  // on first load of site cookieId will be undefined but can pull it from headers.
+  // on first load, cookieId will be undefined, so extracted from headers.
   let firstLoadCookieId = context.res.getHeader('set-cookie');
   if (!cookieId && typeof firstLoadCookieId === 'object') {
     cookieId = firstLoadCookieId[0].slice(3, -8);
   }
-  const res = await fetch(process.env.EXPRESS_HOST_NAME!, {
+
+  let getUrl: string =
+    process.env.EXPRESS_HOST_NAME! + '/fetchLists/' + cookieId;
+
+  console.log(getUrl);
+
+  const res = await fetch(getUrl, {
     method: 'GET',
   });
   // type should to toDoData above when ready
