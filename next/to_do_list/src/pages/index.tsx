@@ -1,12 +1,14 @@
 import Image from 'next/image';
 import { space, inter } from './fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { useRouter } from 'next/router';
+import ListTitle from './_components/listTitle';
 
 // To be used once api setup
-type toDoData = {
+type listTitles = {
+  id: string;
   cookieId: string;
-  name: string;
+  createdAt: Date;
+  title: string;
 };
 
 export const getServerSideProps = (async (context) => {
@@ -20,19 +22,16 @@ export const getServerSideProps = (async (context) => {
   let getUrl: string =
     process.env.EXPRESS_HOST_NAME! + '/fetchLists/' + cookieId;
 
-  console.log(getUrl);
-
   const res = await fetch(getUrl, {
     method: 'GET',
   });
-  // type should to toDoData above when ready
-  const toDoData: any = await res.json();
+  const listTitles: { listTitles: listTitles[] } = await res.json();
 
-  return { props: { toDoData: toDoData, cookieId: cookieId } };
-}) satisfies GetServerSideProps<{ toDoData: any; cookieId: any }>;
+  return { props: { listTitles: listTitles.listTitles, cookieId: cookieId } };
+}) satisfies GetServerSideProps<{ listTitles: listTitles[]; cookieId: any }>;
 
 export default function Page({
-  toDoData,
+  listTitles,
   cookieId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
@@ -42,10 +41,17 @@ export default function Page({
         space.className
       }
     >
-      <div>TESTing</div>
-      <div>{toDoData.data}</div>
-      <div>{cookieId}</div>
-      <div>TESTing this is a test this is a test this is a test</div>
+      <div>Welcome</div>
+      {listTitles.map((title) => {
+        return (
+          <div className='flex flex-row'>
+            <div className='mr-4'>{title.title}</div>
+            <div className='mr-4'>expand</div>
+            <div className='mr-4'>delete</div>
+          </div>
+        );
+      })}
+      <div>footer</div>
     </main>
   );
 }
