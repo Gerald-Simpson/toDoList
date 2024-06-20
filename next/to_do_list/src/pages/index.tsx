@@ -11,12 +11,11 @@ type toDoData = {
 
 export const getServerSideProps = (async (context) => {
   let cookieId = context.req.cookies.id;
-  let otherCookieId = context.res.getHeader('set-cookie');
-  if (!cookieId && typeof otherCookieId === 'string') {
-    cookieId = otherCookieId;
+  // on first load of site cookieId will be undefined but can pull it from headers.
+  let firstLoadCookieId = context.res.getHeader('set-cookie');
+  if (!cookieId && typeof firstLoadCookieId === 'object') {
+    cookieId = firstLoadCookieId[0].slice(3, -8);
   }
-  console.log(cookieId);
-  console.log(otherCookieId);
   const res = await fetch(process.env.EXPRESS_HOST_NAME!, {
     method: 'GET',
   });
@@ -30,12 +29,6 @@ export default function Page({
   toDoData,
   cookieId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  /*
-                      const router = useRouter();
-                    if (cookieId === 'not set') {
-                      router.reload();
-                }
-                          */
   return (
     <main
       className={
