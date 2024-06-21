@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import { withAccelerate } from '@prisma/extension-accelerate';
+import { z } from 'zod';
 
 const prisma = new PrismaClient();
 
@@ -10,6 +10,25 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT;
 
+const listTitleSchema = z.array(
+  z.object({
+    id: z.number().int(),
+    cookieId: z.string(),
+    createdAt: z.coerce.date(),
+    title: z.string(),
+  }),
+);
+
+const listItemsSchema = z.array(
+  z.object({
+    id: z.number().int(),
+    titleId: z.number().int(),
+    createdAt: z.coerce.date(),
+    message: z.string(),
+    complete: z.boolean(),
+  }),
+);
+
 // Fetch all list titles for user using cookieId
 app.get('/fetchLists/:cookieId', async (req: Request, res: Response) => {
   async function getLists() {
@@ -17,6 +36,7 @@ app.get('/fetchLists/:cookieId', async (req: Request, res: Response) => {
       where: { cookieId: req.params.cookieId },
     });
     console.log(allTitles);
+    listTitleSchema.parse(allTitles);
     res.json({
       listTitles: allTitles,
     });
@@ -28,6 +48,7 @@ app.get('/fetchLists/:cookieId', async (req: Request, res: Response) => {
     })
     .catch(async (err) => {
       console.error(err);
+      console.log('error test');
       await prisma.$disconnect();
       process.exit(1);
     });
@@ -42,6 +63,7 @@ app.get('/fetchItems/:titleId', async (req: Request, res: Response) => {
       },
     });
     console.log(allItems);
+    listItemsSchema.parse(allItems);
     res.json({
       listItems: allItems,
     });
