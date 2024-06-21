@@ -12,6 +12,7 @@ type listTitles = {
 
 export const getServerSideProps = (async (context) => {
   let cookieId = context.req.cookies.id;
+  console.log(cookieId);
   // on first load, cookieId will be undefined, so extracted from headers.
   let firstLoadCookieId = context.res.getHeader('set-cookie');
   if (!cookieId && typeof firstLoadCookieId === 'object') {
