@@ -46,6 +46,9 @@ export default function Page({
         return (
           <div className='flex flex-row'>
             <div className='mr-4'>{title.title}</div>
+            <div className='mr-4'>
+              {new Date(title.createdAt).toDateString().slice(4)}
+            </div>
             <div className='mr-4'>expand</div>
             <div className='mr-4'>delete</div>
           </div>
