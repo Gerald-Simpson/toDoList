@@ -10,7 +10,8 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT;
 
-app.get('/fetchLists/:cookieId?', async (req: Request, res: Response) => {
+// Fetch all list titles for user using cookieId
+app.get('/fetchLists/:cookieId', async (req: Request, res: Response) => {
   async function getLists() {
     const allTitles = await prisma.listTitle.findMany({
       where: { cookieId: req.params.cookieId },
@@ -22,6 +23,31 @@ app.get('/fetchLists/:cookieId?', async (req: Request, res: Response) => {
   }
 
   getLists()
+    .then(async () => {
+      await prisma.$disconnect();
+    })
+    .catch(async (err) => {
+      console.error(err);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+});
+
+// Fetch all listItems from a titleId and user cookieId
+app.get('/fetchItems/:titleId', async (req: Request, res: Response) => {
+  async function getItems() {
+    const allItems = await prisma.listItems.findMany({
+      where: {
+        titleId: parseInt(req.params.titleId),
+      },
+    });
+    console.log(allItems);
+    res.json({
+      listItems: allItems,
+    });
+  }
+
+  getItems()
     .then(async () => {
       await prisma.$disconnect();
     })
