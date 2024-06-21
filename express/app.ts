@@ -14,6 +14,7 @@ const cookieSchema = z.string().length(36);
 const idSchema = z.coerce.number().int();
 const titleSchema = z.string().min(1);
 const messageSchema = z.string().min(1);
+const completeSchema = z.coerce.number().min(0).max(1);
 
 const listTitleSchema = z.array(
   z.object({
@@ -195,17 +196,16 @@ app.delete('/deleteTitle/', async (req: Request, res: Response) => {
       singleTitleSchema.parse(deletedTitle);
       res.sendStatus(200);
     }
-
-    deleteTitle()
-      .then(async () => {
-        await prisma.$disconnect();
-      })
-      .catch(async (err) => {
-        console.error(err);
-        await prisma.$disconnect();
-        process.exit(1);
-      });
   }
+  deleteTitle()
+    .then(async () => {
+      await prisma.$disconnect();
+    })
+    .catch(async (err) => {
+      console.error(err);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
 });
 
 // Delete listTitle from an id
@@ -224,6 +224,39 @@ app.delete('/deleteItem/', async (req: Request, res: Response) => {
   }
 
   deleteItem()
+    .then(async () => {
+      await prisma.$disconnect();
+    })
+    .catch(async (err) => {
+      console.error(err);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+});
+
+// Patch to invert complete state of listItem using an id and boolean
+app.patch('/complete/', async (req: Request, res: Response) => {
+  async function completedItem() {
+    idSchema.parse(req.query.id);
+    completeSchema.parse(req.query.completeBool);
+    if (
+      typeof req.query.id === 'string' &&
+      typeof req.query.completeBool === 'string'
+    ) {
+      const completedItem = await prisma.listItems.update({
+        where: {
+          id: parseInt(req.query.id),
+        },
+        data: {
+          complete: Boolean(req.query.completeBool),
+        },
+      });
+      singleItemSchema.parse(completedItem);
+      res.sendStatus(200);
+    }
+  }
+
+  completedItem()
     .then(async () => {
       await prisma.$disconnect();
     })
