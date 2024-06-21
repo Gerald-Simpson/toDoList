@@ -11,7 +11,7 @@ const app: Express = express();
 const port = process.env.PORT;
 
 const cookieSchema = z.string().length(36);
-const titleIdSchema = z.coerce.number().int();
+const idSchema = z.coerce.number().int();
 const titleSchema = z.string().min(1);
 const messageSchema = z.string().min(1);
 
@@ -81,14 +81,14 @@ app.get('/fetchLists/', async (req: Request, res: Response) => {
     });
 });
 
-// Fetch all listItems from a titleId and user cookieId
+// Fetch all listItems from a titleId
 app.get('/fetchItems/', async (req: Request, res: Response) => {
   async function getItems() {
-    titleIdSchema.parse(req.query.titleId);
+    idSchema.parse(req.query.titleId);
     if (typeof req.query.titleId === 'string') {
       const allItems = await prisma.listItems.findMany({
         where: {
-          titleId: parseInt(req.params.titleId),
+          titleId: parseInt(req.query.titleId),
         },
       });
       console.log(allItems);
@@ -112,7 +112,7 @@ app.get('/fetchItems/', async (req: Request, res: Response) => {
 
 // Create new listTitle from a cookieId and title
 app.post('/createTitle/', async (req: Request, res: Response) => {
-  async function createItem() {
+  async function createTitle() {
     cookieSchema.parse(req.query.cookieId);
     titleSchema.parse(req.query.title);
     if (
@@ -131,7 +131,7 @@ app.post('/createTitle/', async (req: Request, res: Response) => {
     }
   }
 
-  createItem()
+  createTitle()
     .then(async () => {
       await prisma.$disconnect();
     })
@@ -145,7 +145,7 @@ app.post('/createTitle/', async (req: Request, res: Response) => {
 // Create new listItem from a titleId and message
 app.post('/createItem/', async (req: Request, res: Response) => {
   async function createItem() {
-    titleIdSchema.parse(req.query.titleId);
+    idSchema.parse(req.query.titleId);
     messageSchema.parse(req.query.message);
     console.log('pre test');
     if (
@@ -166,6 +166,64 @@ app.post('/createItem/', async (req: Request, res: Response) => {
   }
 
   createItem()
+    .then(async () => {
+      await prisma.$disconnect();
+    })
+    .catch(async (err) => {
+      console.error(err);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+});
+
+// Delete listTitle from a id
+app.delete('/deleteTitle/', async (req: Request, res: Response) => {
+  async function deleteTitle() {
+    idSchema.parse(req.query.id);
+    if (typeof req.query.id === 'string') {
+      const deletedItems = await prisma.listItems.deleteMany({
+        where: {
+          titleId: parseInt(req.query.id),
+        },
+      });
+      listItemsSchema.parse(deletedItems);
+      const deletedTitle = await prisma.listTitle.delete({
+        where: {
+          id: parseInt(req.query.id),
+        },
+      });
+      singleTitleSchema.parse(deletedTitle);
+      res.sendStatus(200);
+    }
+
+    deleteTitle()
+      .then(async () => {
+        await prisma.$disconnect();
+      })
+      .catch(async (err) => {
+        console.error(err);
+        await prisma.$disconnect();
+        process.exit(1);
+      });
+  }
+});
+
+// Delete listTitle from an id
+app.delete('/deleteItem/', async (req: Request, res: Response) => {
+  async function deleteItem() {
+    idSchema.parse(req.query.id);
+    if (typeof req.query.id === 'string') {
+      const deletedItem = await prisma.listItems.delete({
+        where: {
+          id: parseInt(req.query.id),
+        },
+      });
+      singleItemSchema.parse(deletedItem);
+      res.sendStatus(200);
+    }
+  }
+
+  deleteItem()
     .then(async () => {
       await prisma.$disconnect();
     })
