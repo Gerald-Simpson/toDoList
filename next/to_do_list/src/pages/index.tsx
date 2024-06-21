@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import { space, inter } from './fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import ListTitle from './_components/listTitle';
 
 // To be used once api setup
 type listTitles = {
@@ -20,7 +19,7 @@ export const getServerSideProps = (async (context) => {
   }
 
   let getUrl: string =
-    process.env.EXPRESS_HOST_NAME! + '/fetchLists/' + cookieId;
+    process.env.EXPRESS_HOST_NAME! + '/fetchLists/?cookieId=' + cookieId;
 
   const res = await fetch(getUrl, {
     method: 'GET',
