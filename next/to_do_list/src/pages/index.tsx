@@ -50,8 +50,6 @@ export default function Page({
   const [activeListTitles, setActiveListTitles] =
     useState<listTitles[]>(listTitles);
 
-  let router = useRouter();
-
   async function deleteTitle(id: number) {
     let deleteTitleUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
@@ -62,7 +60,6 @@ export default function Page({
       method: 'DELETE',
     });
     if (res.status === 200) {
-      //router.refresh();
       if (typeof cookieId === 'string') {
         await updateTitles();
       }
@@ -83,7 +80,7 @@ export default function Page({
       method: 'DELETE',
     });
     if (res.status === 200) {
-      router.refresh();
+      setActiveListItems(await getItems(activeListId));
       return;
     } else {
       console.error(res);
@@ -162,10 +159,37 @@ export default function Page({
       });
 
       if (res.status === 200) {
-        setActiveListItems(await getItems(activeListId));
         //@ts-ignore
         document.getElementById('titleInput').reset();
         updateTitles();
+        return;
+      } else {
+        console.error(res);
+        return res.status;
+      }
+    }
+  }
+
+  async function createItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    if (typeof formData.get('item') === 'string') {
+      let createUrl: string =
+        process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
+        '/createItem/?titleId=' +
+        activeListId +
+        '&message=' +
+        formData.get('item');
+
+      const res = await fetch(createUrl, {
+        method: 'POST',
+      });
+
+      if (res.status === 200) {
+        setActiveListItems(await getItems(activeListId));
+        //@ts-ignore
+        document.getElementById('itemInput').reset();
         return;
       } else {
         console.error(res);
@@ -208,7 +232,7 @@ export default function Page({
           // Active list
         } else if (activeListId === parseInt(title.id)) {
           return (
-            <div className='flex flex-col my-1 text-base'>
+            <div className='flex flex-col my-1 text-base' key={title.id}>
               <div
                 className='flex flex-row my-1 text-base'
                 key={title.id}
@@ -234,7 +258,7 @@ export default function Page({
                 }
                 if (item.complete === false) {
                   return (
-                    <div className='flex flex-row my-1 text-sm'>
+                    <div className='flex flex-row my-1 text-sm' key={item.id}>
                       <div
                         className='mr-4'
                         onClick={() => {
@@ -262,7 +286,10 @@ export default function Page({
                 }
                 if (item.complete === true) {
                   return (
-                    <div className='flex flex-row my-1 text-sm text-gray-300'>
+                    <div
+                      className='flex flex-row my-1 text-sm text-gray-300'
+                      key={item.id}
+                    >
                       <div
                         className='mr-4'
                         onClick={() => {
@@ -286,8 +313,23 @@ export default function Page({
                   );
                 }
               })}
-              <div className='flex flex-row my-1 text-sm'>
-                <div className='mr-4 ml-6'>Add new item to list?</div>
+              <div className='flex flex-row my-1 ml-7 text-sm'>
+                <form
+                  id='itemInput'
+                  className='flex flex-row w-full justify-between'
+                  onSubmit={createItem}
+                >
+                  <input
+                    type='text'
+                    name='item'
+                    placeholder='New item...'
+                    maxLength={30}
+                    size={30}
+                  />
+                  <button className='mr-4 ml-6' type='submit'>
+                    &#65291;
+                  </button>
+                </form>
               </div>
             </div>
           );
@@ -304,6 +346,7 @@ export default function Page({
             name='title'
             placeholder='New list...'
             maxLength={30}
+            size={30}
           />
           <button className='mr-4 ml-6' type='submit'>
             &#65291;
