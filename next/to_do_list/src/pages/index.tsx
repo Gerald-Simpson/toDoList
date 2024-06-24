@@ -2,13 +2,22 @@ import Image from 'next/image';
 import { space, inter } from './fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-// To be used once api setup
 type listTitles = {
   id: string;
   cookieId: string;
   createdAt: Date;
   title: string;
+};
+
+type listItems = {
+  id: string;
+  titleId: number;
+  cookieId: string;
+  createdAt: Date;
+  message: string;
+  complete: Boolean;
 };
 
 export const getServerSideProps = (async (context) => {
@@ -36,6 +45,9 @@ export default function Page({
   listTitles,
   cookieId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const [activeListId, setActiveListId] = useState<number>(0);
+  const [activeListItems, setActiveListItems] = useState<listItems[]>([]);
+
   let router = useRouter();
 
   async function deleteTitle(id: number) {
@@ -56,26 +68,92 @@ export default function Page({
     }
   }
 
+  async function getItems(titleId: number) {
+    let getUrl: string =
+      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
+      '/fetchItems/?titleId=' +
+      titleId;
+
+    const res = await fetch(getUrl, {
+      method: 'GET',
+    });
+    const tempRes: any = await res.json();
+    const listItems: listItems[] = tempRes.listItems;
+    return listItems;
+  }
+
+  async function activateList(id: number) {
+    if (activeListId != id) {
+      setActiveListId(id);
+    } else if (activeListId === id) {
+      setActiveListId(0);
+    }
+    let listItems: listItems[] = await getItems(id);
+    setActiveListItems(listItems);
+    return activeListItems;
+  }
+
   return (
     <main
       className={'flex min-h-screen w-full flex-col m-2 ' + space.className}
     >
       <h1 className='flex w-full text-xl my-2'>My Notes:</h1>
       {listTitles.map((title) => {
-        return (
-          <div className='flex flex-row my-1 text-sm' key={title.id}>
-            <div
-              className='mr-4'
-              onClick={() => {
-                deleteTitle(parseInt(title.id));
-              }}
-            >
-              X
+        if (activeListId != parseInt(title.id)) {
+          return (
+            <div className='flex flex-row my-1 text-sm' key={title.id}>
+              <div
+                className='mr-4'
+                onClick={() => {
+                  deleteTitle(parseInt(title.id));
+                }}
+              >
+                X
+              </div>
+              <div className='mr-4'>{title.title}</div>
+              <div
+                className='mr-4'
+                onClick={() => {
+                  activateList(parseInt(title.id));
+                }}
+              >
+                ^
+              </div>
             </div>
-            <div className='mr-4'>{title.title}</div>
-            <div className='mr-4'>^</div>
-          </div>
-        );
+          );
+        } else if (activeListId === parseInt(title.id)) {
+          return (
+            <div className='flex flex-col my-1 text-s'>
+              <div className='flex flex-row my-1 text-sm' key={title.id}>
+                <div
+                  className='mr-4'
+                  onClick={() => {
+                    deleteTitle(parseInt(title.id));
+                  }}
+                >
+                  X
+                </div>
+                <div className='mr-4'>{title.title}</div>
+                <div
+                  className='mr-4'
+                  onClick={() => {
+                    activateList(parseInt(title.id));
+                  }}
+                >
+                  *
+                </div>
+              </div>
+              {activeListItems.map((item) => {
+                return (
+                  <div>
+                    <div>{item.message}</div>
+                  </div>
+                );
+              })}
+              <div>Add new item to list?</div>
+            </div>
+          );
+        }
       })}
       <div className='flex flex-row my-1 text-sm'>
         <div className='mr-4 ml-6'>Input new list...</div>
