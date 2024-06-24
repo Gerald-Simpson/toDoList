@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { space, inter } from './fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 
 type listTitles = {
   id: string;
@@ -64,7 +64,7 @@ export default function Page({
     if (res.status === 200) {
       //router.refresh();
       if (typeof cookieId === 'string') {
-        await updateTitles(cookieId);
+        await updateTitles();
       }
       return;
     } else {
@@ -91,7 +91,7 @@ export default function Page({
     }
   }
 
-  async function updateTitles(cookieId: string) {
+  async function updateTitles() {
     let updateUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
       '/fetchLists/?cookieId=' +
@@ -145,6 +145,35 @@ export default function Page({
     }
   }
 
+  async function createTitle(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    if (typeof formData.get('title') === 'string') {
+      let createUrl: string =
+        process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
+        '/createTitle/?cookieId=' +
+        cookieId +
+        '&title=' +
+        formData.get('title');
+
+      const res = await fetch(createUrl, {
+        method: 'POST',
+      });
+
+      if (res.status === 200) {
+        setActiveListItems(await getItems(activeListId));
+        //@ts-ignore
+        document.getElementById('titleInput').reset();
+        updateTitles();
+        return;
+      } else {
+        console.error(res);
+        return res.status;
+      }
+    }
+  }
+
   async function activateList(id: number) {
     if (activeListId != id) {
       setActiveListId(id);
@@ -161,7 +190,7 @@ export default function Page({
     <main
       className={'flex min-h-screen w-full flex-col m-2 ' + space.className}
     >
-      <h1 className='flex w-full text-xl my-2'>To Do Lists:</h1>
+      <h1 className='flex w-full text-xl my-2'>To Do:</h1>
       {activeListTitles.map((title) => {
         // Inactive list
         if (activeListId != parseInt(title.id)) {
@@ -265,8 +294,21 @@ export default function Page({
         }
       })}
       <div className='flex flex-row my-1 text-base'>
-        <div className='mr-4'>Input new list...</div>
-        <div className='mr-4'>*</div>
+        <form
+          id='titleInput'
+          className='flex flex-row w-full justify-between'
+          onSubmit={createTitle}
+        >
+          <input
+            type='text'
+            name='title'
+            placeholder='New list...'
+            maxLength={30}
+          />
+          <button className='mr-4 ml-6' type='submit'>
+            &#65291;
+          </button>
+        </form>
       </div>
     </main>
   );

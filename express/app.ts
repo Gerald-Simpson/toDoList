@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import cors from 'cors';
+import bodyParser from 'body-parser';
 
 const prisma = new PrismaClient();
 
@@ -115,9 +116,43 @@ app.get('/fetchItems/', async (req: Request, res: Response) => {
     });
 });
 
+/*
+// Create new listTitle from a cookieId and title
+app.post('/createTitle/', jsonParser, async (req: Request, res: Response) => {
+  async function createTitle() {
+    cookieSchema.parse(req.query.cookieId);
+    titleSchema.parse(req.query.title);
+    if (
+      typeof req.query.cookieId === 'string' &&
+      typeof req.query.title === 'string'
+    ) {
+      const newTitle = await prisma.listTitle.create({
+        data: {
+          cookieId: req.query.cookieId,
+          title: req.query.title,
+        },
+      });
+      singleTitleSchema.parse(newTitle);
+      res.sendStatus(200);
+    }
+  }
+
+  createTitle()
+    .then(async () => {
+      await prisma.$disconnect();
+    })
+    .catch(async (err) => {
+      console.error(err);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+});
+*/
+
 // Create new listTitle from a cookieId and title
 app.post('/createTitle/', async (req: Request, res: Response) => {
   async function createTitle() {
+    console.log(req.query.title);
     cookieSchema.parse(req.query.cookieId);
     titleSchema.parse(req.query.title);
     if (
