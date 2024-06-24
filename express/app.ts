@@ -66,14 +66,11 @@ app.get('/fetchLists/', async (req: Request, res: Response) => {
       const allTitles = await prisma.listTitle.findMany({
         where: { cookieId: req.query.cookieId },
       });
-      console.log(allTitles);
       listTitleSchema.parse(allTitles);
       res.json({
         listTitles: allTitles,
       });
       if (req.query.test) {
-        console.log('query test works');
-        console.log(req.query.test);
       }
     }
   }
@@ -100,7 +97,6 @@ app.get('/fetchItems/', async (req: Request, res: Response) => {
           titleId: parseInt(req.query.titleId),
         },
       });
-      console.log(allItems);
       listItemsSchema.parse(allItems);
       res.json({
         listItems: allItems,
@@ -134,7 +130,6 @@ app.post('/createTitle/', async (req: Request, res: Response) => {
           title: req.query.title,
         },
       });
-      console.log(newTitle);
       singleTitleSchema.parse(newTitle);
       res.sendStatus(200);
     }
@@ -156,19 +151,16 @@ app.post('/createItem/', async (req: Request, res: Response) => {
   async function createItem() {
     idSchema.parse(req.query.titleId);
     messageSchema.parse(req.query.message);
-    console.log('pre test');
     if (
       typeof req.query.titleId === 'string' &&
       typeof req.query.message === 'string'
     ) {
-      console.log('post test');
       const newItem = await prisma.listItems.create({
         data: {
           titleId: parseInt(req.query.titleId),
           message: req.query.message,
         },
       });
-      console.log(newItem);
       singleItemSchema.parse(newItem);
       res.sendStatus(200);
     }

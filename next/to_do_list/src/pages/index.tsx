@@ -97,76 +97,80 @@ export default function Page({
     <main
       className={'flex min-h-screen w-full flex-col m-2 ' + space.className}
     >
-      <h1 className='flex w-full text-xl my-2'>My Notes:</h1>
+      <h1 className='flex w-full text-xl my-2'>To Do Lists:</h1>
       {listTitles.map((title) => {
+        // Inactive list
         if (activeListId != parseInt(title.id)) {
           return (
-            <div className='flex flex-row my-1 text-sm' key={title.id}>
+            <div className='flex flex-row my-1 text-base' key={title.id}>
               <div
-                className='mr-4'
-                onClick={() => {
-                  deleteTitle(parseInt(title.id));
-                }}
+                onClick={() => activateList(parseInt(title.id))}
+                className='flex flex-row w-full justify-between'
               >
-                X
-              </div>
-              <div className='mr-4'>{title.title}</div>
-              <div
-                className='mr-4'
-                onClick={() => {
-                  activateList(parseInt(title.id));
-                }}
-              >
-                ^
+                <div className='mr-4'>{title.title}</div>
+                <div className='mr-4'>&#x25BC;</div>
               </div>
             </div>
           );
+          // Active list
         } else if (activeListId === parseInt(title.id)) {
           return (
-            <div className='flex flex-col my-1 text-s'>
-              <div className='flex flex-row my-1 text-sm' key={title.id}>
+            <div className='flex flex-col my-1 text-base'>
+              <div
+                className='flex flex-row my-1 text-base'
+                key={title.id}
+                onClick={() => activateList(parseInt(title.id))}
+              >
                 <div
                   className='mr-4'
                   onClick={() => {
                     deleteTitle(parseInt(title.id));
                   }}
                 >
-                  X
+                  &#x2715;
                 </div>
-                <div className='mr-4'>{title.title}</div>
-                <div
-                  className='mr-4'
-                  onClick={() => {
-                    activateList(parseInt(title.id));
-                  }}
-                >
-                  *
+                <div className='flex flex-row w-full justify-between'>
+                  <div className='mr-4'>{title.title}</div>
+                  <div className='mr-4'>&#x25B2;</div>
                 </div>
               </div>
+              {/* List items */}
               {activeListItems.map((item) => {
                 return (
-                  <div>
-                    <div>{item.message}</div>
+                  <div className='flex flex-row my-1 text-sm'>
+                    <div
+                      className='mr-4'
+                      onClick={() => {
+                        //deleteItem(parseInt(item.id));
+                      }}
+                    >
+                      &#x2715;
+                    </div>
+                    <div className='flex flex-row w-full justify-between'>
+                      <div className='mr-4'>{item.message}</div>
+                      <div
+                        className='mr-4'
+                        onClick={() => {
+                          //markComplete(parseInt(title.id));
+                        }}
+                      >
+                        *
+                      </div>
+                    </div>
                   </div>
                 );
               })}
-              <div>Add new item to list?</div>
+              <div className='flex flex-row my-1 text-sm'>
+                <div className='mr-4 ml-6'>Add new item to list?</div>
+              </div>
             </div>
           );
         }
       })}
-      <div className='flex flex-row my-1 text-sm'>
+      <div className='flex flex-row my-1 text-base'>
         <div className='mr-4 ml-6'>Input new list...</div>
         <div className='mr-4'>*</div>
       </div>
     </main>
   );
 }
-
-/*
- 
-                        <div className='mr-4'>
-                            {new Date(title.createdAt).toDateString().slice(4)}
-                        </div>
-
-*/
