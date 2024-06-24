@@ -252,7 +252,7 @@ app.patch('/complete/', async (req: Request, res: Response) => {
           id: parseInt(req.query.id),
         },
         data: {
-          complete: Boolean(req.query.completeBool),
+          complete: Boolean(parseInt(req.query.completeBool)),
         },
       });
       singleItemSchema.parse(completedItem);

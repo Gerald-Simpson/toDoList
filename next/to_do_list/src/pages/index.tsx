@@ -17,7 +17,7 @@ type listItems = {
   cookieId: string;
   createdAt: Date;
   message: string;
-  complete: Boolean;
+  complete: boolean;
 };
 
 export const getServerSideProps = (async (context) => {
@@ -47,6 +47,8 @@ export default function Page({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [activeListId, setActiveListId] = useState<number>(0);
   const [activeListItems, setActiveListItems] = useState<listItems[]>([]);
+  const [activeListTitles, setActiveListTitles] =
+    useState<listTitles[]>(listTitles);
 
   let router = useRouter();
 
@@ -60,7 +62,10 @@ export default function Page({
       method: 'DELETE',
     });
     if (res.status === 200) {
-      router.refresh();
+      //router.refresh();
+      if (typeof cookieId === 'string') {
+        await updateTitles(cookieId);
+      }
       return;
     } else {
       console.error(res);
@@ -86,6 +91,21 @@ export default function Page({
     }
   }
 
+  async function updateTitles(cookieId: string) {
+    let updateUrl: string =
+      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
+      '/fetchLists/?cookieId=' +
+      cookieId;
+
+    const res = await fetch(updateUrl, {
+      method: 'GET',
+    });
+    const tempRes: any = await res.json();
+    const listTitles: listTitles[] = tempRes.listTitles;
+    setActiveListTitles(listTitles);
+    return;
+  }
+
   async function getItems(titleId: number) {
     let getUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
@@ -98,6 +118,31 @@ export default function Page({
     const tempRes: any = await res.json();
     const listItems: listItems[] = tempRes.listItems;
     return listItems;
+  }
+
+  async function completeItem(id: number, currentBool: boolean) {
+    let completeBool: string = '';
+    if (currentBool) {
+      completeBool = '0';
+    } else if (!currentBool) {
+      completeBool = '1';
+    }
+    let completeUrl: string =
+      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
+      '/complete/?id=' +
+      id +
+      '&completeBool=' +
+      completeBool;
+    const res = await fetch(completeUrl, {
+      method: 'PATCH',
+    });
+    if (res.status === 200) {
+      setActiveListItems(await getItems(activeListId));
+      return;
+    } else {
+      console.error(res);
+      return res.status;
+    }
   }
 
   async function activateList(id: number) {
@@ -117,7 +162,7 @@ export default function Page({
       className={'flex min-h-screen w-full flex-col m-2 ' + space.className}
     >
       <h1 className='flex w-full text-xl my-2'>To Do Lists:</h1>
-      {listTitles.map((title) => {
+      {activeListTitles.map((title) => {
         // Inactive list
         if (activeListId != parseInt(title.id)) {
           return (
@@ -174,7 +219,7 @@ export default function Page({
                         <div
                           className='mr-4'
                           onClick={() => {
-                            //markComplete(parseInt(title.id));
+                            completeItem(parseInt(item.id), item.complete);
                           }}
                         >
                           &#9744;
@@ -202,7 +247,7 @@ export default function Page({
                         <div
                           className='mr-4'
                           onClick={() => {
-                            //markComplete(parseInt(title.id));
+                            completeItem(parseInt(item.id), item.complete);
                           }}
                         >
                           &#9746;
