@@ -68,6 +68,24 @@ export default function Page({
     }
   }
 
+  async function deleteItem(id: number) {
+    let deleteItemUrl: string =
+      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
+      '/deleteItem/?id=' +
+      id.toString();
+
+    const res = await fetch(deleteItemUrl, {
+      method: 'DELETE',
+    });
+    if (res.status === 200) {
+      router.refresh();
+      return;
+    } else {
+      console.error(res);
+      return res.status;
+    }
+  }
+
   async function getItems(titleId: number) {
     let getUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
@@ -85,11 +103,12 @@ export default function Page({
   async function activateList(id: number) {
     if (activeListId != id) {
       setActiveListId(id);
+      let listItems: listItems[] = await getItems(id);
+      setActiveListItems(listItems);
     } else if (activeListId === id) {
       setActiveListId(0);
+      setActiveListItems([]);
     }
-    let listItems: listItems[] = await getItems(id);
-    setActiveListItems(listItems);
     return activeListItems;
   }
 
@@ -136,29 +155,62 @@ export default function Page({
               </div>
               {/* List items */}
               {activeListItems.map((item) => {
-                return (
-                  <div className='flex flex-row my-1 text-sm'>
-                    <div
-                      className='mr-4'
-                      onClick={() => {
-                        //deleteItem(parseInt(item.id));
-                      }}
-                    >
-                      &#x2715;
-                    </div>
-                    <div className='flex flex-row w-full justify-between'>
-                      <div className='mr-4'>{item.message}</div>
+                {
+                  /* incomplete item*/
+                }
+                if (item.complete === false) {
+                  return (
+                    <div className='flex flex-row my-1 text-sm'>
                       <div
                         className='mr-4'
                         onClick={() => {
-                          //markComplete(parseInt(title.id));
+                          deleteItem(parseInt(item.id));
                         }}
                       >
-                        *
+                        &#x2715;
+                      </div>
+                      <div className='flex flex-row w-full justify-between'>
+                        <div className='mr-4'>{item.message}</div>
+                        <div
+                          className='mr-4'
+                          onClick={() => {
+                            //markComplete(parseInt(title.id));
+                          }}
+                        >
+                          &#9744;
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
+                  );
+                }
+                {
+                  /* complete item*/
+                }
+                if (item.complete === true) {
+                  return (
+                    <div className='flex flex-row my-1 text-sm text-gray-300'>
+                      <div
+                        className='mr-4'
+                        onClick={() => {
+                          deleteItem(parseInt(item.id));
+                        }}
+                      >
+                        &#x2715;
+                      </div>
+                      <div className='flex flex-row w-full justify-between'>
+                        <div className='mr-4 line-through'>{item.message}</div>
+                        <div
+                          className='mr-4'
+                          onClick={() => {
+                            //markComplete(parseInt(title.id));
+                          }}
+                        >
+                          &#9746;
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
               })}
               <div className='flex flex-row my-1 text-sm'>
                 <div className='mr-4 ml-6'>Add new item to list?</div>
@@ -168,7 +220,7 @@ export default function Page({
         }
       })}
       <div className='flex flex-row my-1 text-base'>
-        <div className='mr-4 ml-6'>Input new list...</div>
+        <div className='mr-4'>Input new list...</div>
         <div className='mr-4'>*</div>
       </div>
     </main>
