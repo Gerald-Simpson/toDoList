@@ -211,180 +211,164 @@ export default function Page({
   }
 
   return (
-    <main className={'flex min-h-screen w-full flex-col ' + space.className}>
-      <h1 className='flex w-full text-xl py-2 px-2 bg-gray-400 border-b border-black'>
-        To Do:
-      </h1>
-      {activeListTitles.map((title) => {
-        // Inactive list
-        if (activeListId != parseInt(title.id)) {
-          return (
-            <div
-              className='flex flex-row py-1 pl-10 text-base bg-gray-300 border-b border-gray-600'
-              key={title.id}
-            >
+    <div className='flex justify-center w-full h-screen'>
+      <main
+        className={
+          'flex min-h-screen w-full flex-col md:max-w-4xl ' + space.className
+        }
+      >
+        <h1 className='flex w-full text-xl py-2 px-2 bg-gray-400 border-b border-black'>
+          To Do:
+        </h1>
+        {activeListTitles.map((title) => {
+          // Inactive list
+          if (activeListId != parseInt(title.id)) {
+            return (
               <div
-                onClick={() => activateList(parseInt(title.id))}
-                className='flex flex-row w-full justify-between'
-              >
-                <div className='mr-4'>{title.title}</div>
-                <div className='mr-3.5'>&#x25BC;</div>
-              </div>
-            </div>
-          );
-          // Active list
-        } else if (activeListId === parseInt(title.id)) {
-          return (
-            <div className='flex flex-col text-base' key={title.id}>
-              <div
-                className='w-full flex flex-row py-1 pl-3.5 text-base bg-gray-300 border-b border-gray-600'
+                className='flex flex-row py-1 pl-10 text-base bg-gray-300 border-b border-gray-600'
                 key={title.id}
-                onClick={() => activateList(parseInt(title.id))}
               >
                 <div
-                  className='mr-3.5 text-red-500 text-black'
-                  onClick={() => {
-                    deleteTitle(parseInt(title.id));
-                  }}
+                  onClick={() => activateList(parseInt(title.id))}
+                  className='flex flex-row w-full justify-between'
                 >
-                  &#x2715;
-                </div>
-                <div className='flex flex-row w-full justify-between'>
                   <div className='mr-4'>{title.title}</div>
-                  <div className='mr-3.5 text-green-500'>&#x25B2;</div>
+                  <div className='mr-3.5'>&#x25BC;</div>
                 </div>
               </div>
-              {/* List items */}
-              {activeListItems.map((item) => {
-                {
-                  /* incomplete item*/
-                }
-                if (item.complete === false) {
-                  return (
-                    <div
-                      className='flex flex-row py-1 text-sm bg-gray-200 border-b border-gray-400'
-                      key={item.id}
-                    >
-                      <div
-                        className='ml-4 mr-4'
-                        onClick={() => {
-                          completeItem(parseInt(item.id), item.complete);
-                        }}
-                      >
-                        &#9744;
-                      </div>
-                      <div className='flex flex-row w-full justify-between'>
-                        <div
-                          className='mr-4'
-                          onClick={() => {
-                            completeItem(parseInt(item.id), item.complete);
-                          }}
-                        >
-                          {item.message}
-                        </div>
-                        <div
-                          className='mr-4 text-red-500 text-black'
-                          onClick={() => {
-                            deleteItem(parseInt(item.id));
-                          }}
-                        >
-                          &#x2715;
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-                {
-                  /* complete item*/
-                }
-                if (item.complete === true) {
-                  return (
-                    <div
-                      className='flex flex-row py-1 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
-                      key={item.id}
-                    >
-                      <div
-                        className='mr-4 ml-4'
-                        onClick={() => {
-                          completeItem(parseInt(item.id), item.complete);
-                        }}
-                      >
-                        &#9745;
-                      </div>
-                      <div className='flex flex-row w-full justify-between'>
-                        <div
-                          className='mr-4 line-through'
-                          onClick={() => {
-                            completeItem(parseInt(item.id), item.complete);
-                          }}
-                        >
-                          {item.message}
-                        </div>
-                        <div
-                          className='mr-4 text-red-500 text-black'
-                          onClick={() => {
-                            deleteItem(parseInt(item.id));
-                          }}
-                        >
-                          &#x2715;
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-              })}
-              <div className='flex flex-row py-1 text-sm bg-gray-200 border-b border-gray-400'>
-                <form
-                  id='itemInput'
-                  className='flex flex-row w-full'
-                  onSubmit={createItem}
+            );
+            // Active list
+          } else if (activeListId === parseInt(title.id)) {
+            return (
+              <div className='flex flex-col text-base' key={title.id}>
+                <div
+                  className='w-full flex flex-row py-1 pl-3.5 text-base bg-gray-300 border-b border-gray-600'
+                  key={title.id}
+                  onClick={() => activateList(parseInt(title.id))}
                 >
-                  <button
-                    className='mr-4 ml-3.5 text-green-500 font-black'
-                    type='submit'
+                  <div
+                    className='mr-3.5 text-red-500 text-black'
+                    onClick={() => {
+                      deleteTitle(parseInt(title.id));
+                    }}
                   >
-                    &#65291;
-                  </button>
-                  <input
-                    className='bg-transparent outline-none'
-                    type='text'
-                    name='item'
-                    placeholder='New item...'
-                    maxLength={30}
-                    minLength={1}
-                    required
-                    size={30}
-                  />
-                </form>
+                    &#x2715;
+                  </div>
+                  <div className='flex flex-row w-full justify-between'>
+                    <div className='mr-4'>{title.title}</div>
+                    <div className='mr-3.5 text-blue-500'>&#x25B2;</div>
+                  </div>
+                </div>
+                {/* List items */}
+                {activeListItems.map((item) => {
+                  {
+                    /* incomplete item*/
+                  }
+                  if (item.complete === false) {
+                    return (
+                      <div
+                        className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400'
+                        key={item.id}
+                        onClick={() => {
+                          completeItem(parseInt(item.id), item.complete);
+                        }}
+                      >
+                        <div className='ml-4 mr-4'>&#9744;</div>
+                        <div className='flex flex-row w-full justify-between'>
+                          <div className='mr-4'>{item.message}</div>
+                          <div
+                            className='mr-4 text-red-500 text-black'
+                            onClick={() => {
+                              deleteItem(parseInt(item.id));
+                            }}
+                          >
+                            &#x2715;
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  {
+                    /* complete item*/
+                  }
+                  if (item.complete === true) {
+                    return (
+                      <div
+                        className='flex flex-row py-2 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
+                        key={item.id}
+                        onClick={() => {
+                          completeItem(parseInt(item.id), item.complete);
+                        }}
+                      >
+                        <div className='mr-4 ml-4'>&#9745;</div>
+                        <div className='flex flex-row w-full justify-between'>
+                          <div>{item.message}</div>
+                          <div
+                            className='mr-4 text-red-500 text-black'
+                            onClick={() => {
+                              deleteItem(parseInt(item.id));
+                            }}
+                          >
+                            &#x2715;
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                })}
+                <div className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400'>
+                  <form
+                    id='itemInput'
+                    className='flex flex-row w-full'
+                    onSubmit={createItem}
+                  >
+                    <button
+                      className='mr-4 ml-3.5 text-green-500 font-black'
+                      type='submit'
+                    >
+                      &#65291;
+                    </button>
+                    <input
+                      className='bg-transparent outline-none'
+                      type='text'
+                      name='item'
+                      placeholder='New item...'
+                      maxLength={90}
+                      minLength={1}
+                      required
+                      size={40}
+                    />
+                  </form>
+                </div>
               </div>
-            </div>
-          );
-        }
-      })}
-      <div className='flex flex-row py-1 text-base bg-gray-300'>
-        <form
-          id='titleInput'
-          className='flex flex-row w-full'
-          onSubmit={createTitle}
-        >
-          <button
-            className='mr-3 ml-3.5 text-green-500 font-black'
-            type='submit'
+            );
+          }
+        })}
+        <div className='flex flex-row py-1 text-base bg-gray-300'>
+          <form
+            id='titleInput'
+            className='flex flex-row w-full'
+            onSubmit={createTitle}
           >
-            &#65291;
-          </button>
-          <input
-            className='bg-transparent outline-none'
-            type='text'
-            name='title'
-            placeholder='New list...'
-            maxLength={30}
-            minLength={1}
-            required
-            size={30}
-          />
-        </form>
-      </div>
-    </main>
+            <button
+              className='mr-3 ml-3.5 text-green-500 font-black'
+              type='submit'
+            >
+              &#65291;
+            </button>
+            <input
+              className='bg-transparent outline-none'
+              type='text'
+              name='title'
+              placeholder='New list...'
+              maxLength={30}
+              minLength={1}
+              required
+              size={30}
+            />
+          </form>
+        </div>
+      </main>
+    </div>
   );
 }
