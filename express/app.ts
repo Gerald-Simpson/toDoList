@@ -30,6 +30,7 @@ const listTitleSchema = z.array(
 const listItemsSchema = z.array(
   z.object({
     id: z.number().int(),
+    cookieId: z.string(),
     titleId: z.coerce.number().int(),
     createdAt: z.coerce.date(),
     message: z.string(),
@@ -37,8 +38,8 @@ const listItemsSchema = z.array(
   })
 );
 
-const deleteItemsEmptySchema = z.object({
-  count: z.number().min(0).max(0),
+const deleteItemsSchema = z.object({
+  count: z.number().min(0),
 });
 
 const singleTitleSchema = z.object({
@@ -50,6 +51,7 @@ const singleTitleSchema = z.object({
 
 const singleItemSchema = z.object({
   id: z.number().int(),
+  cookieId: z.string(),
   titleId: z.coerce.number().int(),
   createdAt: z.coerce.date(),
   message: z.string(),
@@ -92,10 +94,15 @@ app.get('/fetchLists/', async (req: Request, res: Response) => {
 app.get('/fetchItems/', async (req: Request, res: Response) => {
   async function getItems() {
     idSchema.parse(req.query.titleId);
-    if (typeof req.query.titleId === 'string') {
+    cookieSchema.parse(req.query.cookieId);
+    if (
+      typeof req.query.titleId === 'string' &&
+      typeof req.query.cookieId === 'string'
+    ) {
       const allItems = await prisma.listItems.findMany({
         where: {
           titleId: parseInt(req.query.titleId),
+          cookieId: req.query.cookieId,
         },
       });
       listItemsSchema.parse(allItems);
@@ -152,14 +159,17 @@ app.post('/createItem/', async (req: Request, res: Response) => {
   async function createItem() {
     idSchema.parse(req.query.titleId);
     messageSchema.parse(req.query.message);
+    cookieSchema.parse(req.query.cookieId);
     if (
       typeof req.query.titleId === 'string' &&
-      typeof req.query.message === 'string'
+      typeof req.query.message === 'string' &&
+      typeof req.query.cookieId === 'string'
     ) {
       const newItem = await prisma.listItems.create({
         data: {
           titleId: parseInt(req.query.titleId),
           message: req.query.message,
+          cookieId: req.query.cookieId,
         },
       });
       singleItemSchema.parse(newItem);
@@ -182,20 +192,24 @@ app.post('/createItem/', async (req: Request, res: Response) => {
 app.delete('/deleteTitle/', async (req: Request, res: Response) => {
   async function deleteTitle() {
     idSchema.parse(req.query.id);
-    if (typeof req.query.id === 'string') {
+    cookieSchema.parse(req.query.cookieId);
+    if (
+      typeof req.query.id === 'string' &&
+      typeof req.query.cookieId === 'string'
+    ) {
       const deletedItems = await prisma.listItems.deleteMany({
         where: {
           titleId: parseInt(req.query.id),
+          cookieId: req.query.cookieId,
         },
       });
       if (typeof deletedItems === 'object') {
-        deleteItemsEmptySchema.parse(deletedItems);
-      } else {
-        listItemsSchema.parse(deletedItems);
+        deleteItemsSchema.parse(deletedItems);
       }
       const deletedTitle = await prisma.listTitle.delete({
         where: {
           id: parseInt(req.query.id),
+          cookieId: req.query.cookieId,
         },
       });
       singleTitleSchema.parse(deletedTitle);
@@ -217,10 +231,15 @@ app.delete('/deleteTitle/', async (req: Request, res: Response) => {
 app.delete('/deleteItem/', async (req: Request, res: Response) => {
   async function deleteItem() {
     idSchema.parse(req.query.id);
-    if (typeof req.query.id === 'string') {
+    cookieSchema.parse(req.query.cookieId);
+    if (
+      typeof req.query.id === 'string' &&
+      typeof req.query.cookieId === 'string'
+    ) {
       const deletedItem = await prisma.listItems.delete({
         where: {
           id: parseInt(req.query.id),
+          cookieId: req.query.cookieId,
         },
       });
       singleItemSchema.parse(deletedItem);
@@ -242,15 +261,21 @@ app.delete('/deleteItem/', async (req: Request, res: Response) => {
 // Patch to invert complete state of listItem using an id and boolean
 app.patch('/complete/', async (req: Request, res: Response) => {
   async function completedItem() {
+    console.log(req.query.cookieId);
+    console.log(req.query.id);
+    console.log(req.query.completeBool);
     idSchema.parse(req.query.id);
+    cookieSchema.parse(req.query.cookieId);
     completeSchema.parse(req.query.completeBool);
     if (
       typeof req.query.id === 'string' &&
-      typeof req.query.completeBool === 'string'
+      typeof req.query.completeBool === 'string' &&
+      typeof req.query.cookieId === 'string'
     ) {
       const completedItem = await prisma.listItems.update({
         where: {
           id: parseInt(req.query.id),
+          cookieId: req.query.cookieId,
         },
         data: {
           complete: Boolean(parseInt(req.query.completeBool)),

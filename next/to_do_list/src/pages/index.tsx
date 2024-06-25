@@ -54,7 +54,9 @@ export default function Page({
     let deleteTitleUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
       '/deleteTitle/?id=' +
-      id.toString();
+      id.toString() +
+      '&cookieId=' +
+      cookieId;
 
     const res = await fetch(deleteTitleUrl, {
       method: 'DELETE',
@@ -74,7 +76,9 @@ export default function Page({
     let deleteItemUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
       '/deleteItem/?id=' +
-      id.toString();
+      id.toString() +
+      '&cookieId=' +
+      cookieId;
 
     const res = await fetch(deleteItemUrl, {
       method: 'DELETE',
@@ -107,7 +111,9 @@ export default function Page({
     let getUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
       '/fetchItems/?titleId=' +
-      titleId;
+      titleId +
+      '&cookieId=' +
+      cookieId;
 
     const res = await fetch(getUrl, {
       method: 'GET',
@@ -129,7 +135,9 @@ export default function Page({
       '/complete/?id=' +
       id +
       '&completeBool=' +
-      completeBool;
+      completeBool +
+      '&cookieId=' +
+      cookieId;
     const res = await fetch(completeUrl, {
       method: 'PATCH',
     });
@@ -180,7 +188,9 @@ export default function Page({
         '/createItem/?titleId=' +
         activeListId +
         '&message=' +
-        formData.get('item');
+        formData.get('item') +
+        '&cookieId=' +
+        cookieId;
 
       const res = await fetch(createUrl, {
         method: 'POST',
@@ -269,13 +279,24 @@ export default function Page({
                       <div
                         className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400'
                         key={item.id}
-                        onClick={() => {
-                          completeItem(parseInt(item.id), item.complete);
-                        }}
                       >
-                        <div className='ml-4 mr-4'>&#9744;</div>
+                        <div
+                          className='ml-4 mr-4'
+                          onClick={() => {
+                            completeItem(parseInt(item.id), item.complete);
+                          }}
+                        >
+                          &#9744;
+                        </div>
                         <div className='flex flex-row w-full justify-between'>
-                          <div className='mr-4'>{item.message}</div>
+                          <div
+                            className='mr-4'
+                            onClick={() => {
+                              completeItem(parseInt(item.id), item.complete);
+                            }}
+                          >
+                            {item.message}
+                          </div>
                           <div
                             className='mr-4 text-red-500 text-black'
                             onClick={() => {
@@ -296,13 +317,23 @@ export default function Page({
                       <div
                         className='flex flex-row py-2 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
                         key={item.id}
-                        onClick={() => {
-                          completeItem(parseInt(item.id), item.complete);
-                        }}
                       >
-                        <div className='mr-4 ml-4'>&#9745;</div>
+                        <div
+                          className='mr-4 ml-4'
+                          onClick={() => {
+                            completeItem(parseInt(item.id), item.complete);
+                          }}
+                        >
+                          &#9745;
+                        </div>
                         <div className='flex flex-row w-full justify-between'>
-                          <div>{item.message}</div>
+                          <div
+                            onClick={() => {
+                              completeItem(parseInt(item.id), item.complete);
+                            }}
+                          >
+                            {item.message}
+                          </div>
                           <div
                             className='mr-4 text-red-500 text-black'
                             onClick={() => {

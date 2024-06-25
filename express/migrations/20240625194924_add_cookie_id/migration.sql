@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `listItems` ADD COLUMN `cookieId` VARCHAR(191) NOT NULL DEFAULT '72d64b1f-5340-4bee-8488-d351a7a9c649';

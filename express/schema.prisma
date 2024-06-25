@@ -16,6 +16,7 @@ model listTitle {
 
 model listItems {
     id          Int         @id @default(autoincrement())
+    cookieId    String      
     titleId     Int         
     createdAt   DateTime    @default(now())
     message     String
