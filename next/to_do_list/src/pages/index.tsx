@@ -1,7 +1,5 @@
-import Image from 'next/image';
-import { space, inter } from './fonts';
+import { space } from './fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { useRouter } from 'next/navigation';
 import { useState, FormEvent } from 'react';
 
 type listTitles = {

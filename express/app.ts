@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 
 const prisma = new PrismaClient();
 
@@ -261,9 +260,6 @@ app.delete('/deleteItem/', async (req: Request, res: Response) => {
 // Patch to invert complete state of listItem using an id and boolean
 app.patch('/complete/', async (req: Request, res: Response) => {
   async function completedItem() {
-    console.log(req.query.cookieId);
-    console.log(req.query.id);
-    console.log(req.query.completeBool);
     idSchema.parse(req.query.id);
     cookieSchema.parse(req.query.cookieId);
     completeSchema.parse(req.query.completeBool);
