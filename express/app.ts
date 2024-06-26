@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import cors from 'cors';
+import { auth } from 'express-oauth2-jwt-bearer';
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,13 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
+
+// Authorization middleware. When used, the Access Token must
+// exist and be verified against the Auth0 JSON Web Key Set.
+const checkJwt = auth({
+  audience: 'http://localhost:3001/',
+  issuerBaseURL: `https://dev-lqrmsqwllauuo8yp.uk.auth0.com/`,
+});
 
 const cookieSchema = z.string().length(36);
 const idSchema = z.coerce.number().int();
@@ -61,7 +69,7 @@ const singleItemSchema = z.object({
 app.use(cors());
 
 // Fetch all listTitles for user using cookieId
-app.get('/fetchLists/', async (req: Request, res: Response) => {
+app.get('/fetchLists/', checkJwt, async (req: Request, res: Response) => {
   async function getLists() {
     cookieSchema.parse(req.query.cookieId);
     if (typeof req.query.cookieId === 'string') {
@@ -90,7 +98,7 @@ app.get('/fetchLists/', async (req: Request, res: Response) => {
 });
 
 // Fetch all listItems from a titleId
-app.get('/fetchItems/', async (req: Request, res: Response) => {
+app.get('/fetchItems/', checkJwt, async (req: Request, res: Response) => {
   async function getItems() {
     idSchema.parse(req.query.titleId);
     cookieSchema.parse(req.query.cookieId);
@@ -123,7 +131,7 @@ app.get('/fetchItems/', async (req: Request, res: Response) => {
 });
 
 // Create new listTitle from a cookieId and title
-app.post('/createTitle/', async (req: Request, res: Response) => {
+app.post('/createTitle/', checkJwt, async (req: Request, res: Response) => {
   async function createTitle() {
     cookieSchema.parse(req.query.cookieId);
     titleSchema.parse(req.query.title);
@@ -154,7 +162,7 @@ app.post('/createTitle/', async (req: Request, res: Response) => {
 });
 
 // Create new listItem from a titleId and message
-app.post('/createItem/', async (req: Request, res: Response) => {
+app.post('/createItem/', checkJwt, async (req: Request, res: Response) => {
   async function createItem() {
     idSchema.parse(req.query.titleId);
     messageSchema.parse(req.query.message);
@@ -188,7 +196,7 @@ app.post('/createItem/', async (req: Request, res: Response) => {
 });
 
 // Delete listTitle from a id
-app.delete('/deleteTitle/', async (req: Request, res: Response) => {
+app.delete('/deleteTitle/', checkJwt, async (req: Request, res: Response) => {
   async function deleteTitle() {
     idSchema.parse(req.query.id);
     cookieSchema.parse(req.query.cookieId);
@@ -227,7 +235,7 @@ app.delete('/deleteTitle/', async (req: Request, res: Response) => {
 });
 
 // Delete listTitle from an id
-app.delete('/deleteItem/', async (req: Request, res: Response) => {
+app.delete('/deleteItem/', checkJwt, async (req: Request, res: Response) => {
   async function deleteItem() {
     idSchema.parse(req.query.id);
     cookieSchema.parse(req.query.cookieId);
@@ -258,7 +266,7 @@ app.delete('/deleteItem/', async (req: Request, res: Response) => {
 });
 
 // Patch to invert complete state of listItem using an id and boolean
-app.patch('/complete/', async (req: Request, res: Response) => {
+app.patch('/complete/', checkJwt, async (req: Request, res: Response) => {
   async function completedItem() {
     idSchema.parse(req.query.id);
     cookieSchema.parse(req.query.cookieId);

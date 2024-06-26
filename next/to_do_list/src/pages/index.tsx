@@ -18,6 +18,12 @@ type listItems = {
   complete: boolean;
 };
 
+type tokenResponse = {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+};
+
 export const getServerSideProps = (async (context) => {
   let cookieId = context.req.cookies.id;
   // on first load, cookieId will be undefined, so extracted from headers.
@@ -26,22 +32,46 @@ export const getServerSideProps = (async (context) => {
     cookieId = firstLoadCookieId[0].slice(3, -8);
   }
 
+  const tokenRes = await fetch(process.env.API_POST_URL!, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: process.env.API_BODY,
+  });
+
+  const tempRes: tokenResponse = await tokenRes.json();
+  const apiAccessToken: string = 'BEARER ' + tempRes.access_token;
+
   let getUrl: string =
-    process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
+    process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
     '/fetchLists/?cookieId=' +
-    cookieId;
+    cookieId +
+    '&scope=access:all';
 
   const res = await fetch(getUrl, {
     method: 'GET',
+    headers: {
+      authorization: apiAccessToken!,
+    },
   });
   const listTitles: { listTitles: listTitles[] } = await res.json();
 
-  return { props: { listTitles: listTitles.listTitles, cookieId: cookieId } };
-}) satisfies GetServerSideProps<{ listTitles: listTitles[]; cookieId: any }>;
+  return {
+    props: {
+      listTitles: listTitles.listTitles,
+      cookieId: cookieId,
+      apiAccessToken: apiAccessToken,
+    },
+  };
+}) satisfies GetServerSideProps<{
+  listTitles: listTitles[];
+  cookieId: any;
+  apiAccessToken: string;
+}>;
 
 export default function Page({
   listTitles,
   cookieId,
+  apiAccessToken,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [activeListId, setActiveListId] = useState<number>(0);
   const [activeListItems, setActiveListItems] = useState<listItems[]>([]);
@@ -58,6 +88,9 @@ export default function Page({
 
     const res = await fetch(deleteTitleUrl, {
       method: 'DELETE',
+      headers: {
+        authorization: apiAccessToken,
+      },
     });
     if (res.status === 200) {
       if (typeof cookieId === 'string') {
@@ -80,6 +113,9 @@ export default function Page({
 
     const res = await fetch(deleteItemUrl, {
       method: 'DELETE',
+      headers: {
+        authorization: apiAccessToken!,
+      },
     });
     if (res.status === 200) {
       setActiveListItems(await getItems(activeListId));
@@ -94,10 +130,14 @@ export default function Page({
     let updateUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
       '/fetchLists/?cookieId=' +
-      cookieId;
+      cookieId +
+      '&scope=access:all';
 
     const res = await fetch(updateUrl, {
       method: 'GET',
+      headers: {
+        authorization: apiAccessToken!,
+      },
     });
     const tempRes: any = await res.json();
     const listTitles: listTitles[] = tempRes.listTitles;
@@ -107,7 +147,7 @@ export default function Page({
 
   async function getItems(titleId: number) {
     let getUrl: string =
-      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
+      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
       '/fetchItems/?titleId=' +
       titleId +
       '&cookieId=' +
@@ -115,6 +155,9 @@ export default function Page({
 
     const res = await fetch(getUrl, {
       method: 'GET',
+      headers: {
+        authorization: apiAccessToken!,
+      },
     });
     const tempRes: any = await res.json();
     const listItems: listItems[] = tempRes.listItems;
@@ -138,6 +181,9 @@ export default function Page({
       cookieId;
     const res = await fetch(completeUrl, {
       method: 'PATCH',
+      headers: {
+        authorization: apiAccessToken!,
+      },
     });
     if (res.status === 200) {
       setActiveListItems(await getItems(activeListId));
@@ -154,7 +200,7 @@ export default function Page({
     const formData = new FormData(event.currentTarget);
     if (typeof formData.get('title') === 'string') {
       let createUrl: string =
-        process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
+        process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
         '/createTitle/?cookieId=' +
         cookieId +
         '&title=' +
@@ -162,6 +208,9 @@ export default function Page({
 
       const res = await fetch(createUrl, {
         method: 'POST',
+        headers: {
+          authorization: apiAccessToken!,
+        },
       });
 
       if (res.status === 200) {
@@ -182,7 +231,7 @@ export default function Page({
     const formData = new FormData(event.currentTarget);
     if (typeof formData.get('item') === 'string') {
       let createUrl: string =
-        process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
+        process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
         '/createItem/?titleId=' +
         activeListId +
         '&message=' +
@@ -192,6 +241,9 @@ export default function Page({
 
       const res = await fetch(createUrl, {
         method: 'POST',
+        headers: {
+          authorization: apiAccessToken!,
+        },
       });
 
       if (res.status === 200) {
@@ -225,8 +277,8 @@ export default function Page({
           'flex min-h-screen w-full flex-col md:max-w-4xl ' + space.className
         }
       >
-        <h1 className='flex w-full text-xl py-2 px-2 bg-gray-400 border-b border-black'>
-          To Do:
+        <h1 className='flex w-full text-xl py-2 px-2 bg-gray-400 border-b border-black text-black'>
+          To Do Lists
         </h1>
         {activeListTitles.map((title) => {
           // Inactive list
@@ -275,7 +327,7 @@ export default function Page({
                   if (item.complete === false) {
                     return (
                       <div
-                        className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400'
+                        className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400'
                         key={item.id}
                       >
                         <div
@@ -313,7 +365,7 @@ export default function Page({
                   if (item.complete === true) {
                     return (
                       <div
-                        className='flex flex-row py-2 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
+                        className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
                         key={item.id}
                       >
                         <div
