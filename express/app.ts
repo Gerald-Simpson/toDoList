@@ -65,10 +65,9 @@ const singleItemSchema = z.object({
   complete: z.boolean(),
 });
 
-// Allowing all cors for now as causing client side next access issues
 app.use(cors());
 
-// Fetch all listTitles for user using cookieId
+// Fetch all listTitles
 app.get('/fetchLists/', checkJwt, async (req: Request, res: Response) => {
   async function getLists() {
     cookieSchema.parse(req.query.cookieId);
@@ -97,7 +96,7 @@ app.get('/fetchLists/', checkJwt, async (req: Request, res: Response) => {
     });
 });
 
-// Fetch all listItems from a titleId
+// Fetch all listItems
 app.get('/fetchItems/', checkJwt, async (req: Request, res: Response) => {
   async function getItems() {
     idSchema.parse(req.query.titleId);
@@ -130,7 +129,7 @@ app.get('/fetchItems/', checkJwt, async (req: Request, res: Response) => {
     });
 });
 
-// Create new listTitle from a cookieId and title
+// Create new listTitle
 app.post('/createTitle/', checkJwt, async (req: Request, res: Response) => {
   async function createTitle() {
     cookieSchema.parse(req.query.cookieId);
@@ -161,7 +160,7 @@ app.post('/createTitle/', checkJwt, async (req: Request, res: Response) => {
     });
 });
 
-// Create new listItem from a titleId and message
+// Create new listItem
 app.post('/createItem/', checkJwt, async (req: Request, res: Response) => {
   async function createItem() {
     idSchema.parse(req.query.titleId);
@@ -195,7 +194,7 @@ app.post('/createItem/', checkJwt, async (req: Request, res: Response) => {
     });
 });
 
-// Delete listTitle from a id
+// Delete listTitle
 app.delete('/deleteTitle/', checkJwt, async (req: Request, res: Response) => {
   async function deleteTitle() {
     idSchema.parse(req.query.id);
@@ -234,7 +233,7 @@ app.delete('/deleteTitle/', checkJwt, async (req: Request, res: Response) => {
     });
 });
 
-// Delete listTitle from an id
+// Delete listTitle
 app.delete('/deleteItem/', checkJwt, async (req: Request, res: Response) => {
   async function deleteItem() {
     idSchema.parse(req.query.id);
@@ -265,7 +264,7 @@ app.delete('/deleteItem/', checkJwt, async (req: Request, res: Response) => {
     });
 });
 
-// Patch to invert complete state of listItem using an id and boolean
+// Invert complete boolean state of a listItem
 app.patch('/complete/', checkJwt, async (req: Request, res: Response) => {
   async function completedItem() {
     idSchema.parse(req.query.id);

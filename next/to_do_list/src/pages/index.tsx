@@ -25,6 +25,7 @@ type tokenResponse = {
 };
 
 export const getServerSideProps = (async (context) => {
+  // using cookie middleware to assign an id that is used to load users lists
   let cookieId = context.req.cookies.id;
   // on first load, cookieId will be undefined, so extracted from headers.
   let firstLoadCookieId = context.res.getHeader('set-cookie');
@@ -32,6 +33,7 @@ export const getServerSideProps = (async (context) => {
     cookieId = firstLoadCookieId[0].slice(3, -8);
   }
 
+  // fetching token to access api to pass to client side
   const tokenRes = await fetch(process.env.API_POST_URL!, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -41,11 +43,11 @@ export const getServerSideProps = (async (context) => {
   const tempRes: tokenResponse = await tokenRes.json();
   const apiAccessToken: string = 'BEARER ' + tempRes.access_token;
 
+  // fetching list titles on server before first load
   let getUrl: string =
     process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
     '/fetchLists/?cookieId=' +
-    cookieId +
-    '&scope=access:all';
+    cookieId;
 
   const res = await fetch(getUrl, {
     method: 'GET',
@@ -53,6 +55,7 @@ export const getServerSideProps = (async (context) => {
       authorization: apiAccessToken!,
     },
   });
+
   const listTitles: { listTitles: listTitles[] } = await res.json();
 
   return {
@@ -130,8 +133,7 @@ export default function Page({
     let updateUrl: string =
       process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
       '/fetchLists/?cookieId=' +
-      cookieId +
-      '&scope=access:all';
+      cookieId;
 
     const res = await fetch(updateUrl, {
       method: 'GET',
@@ -285,7 +287,7 @@ export default function Page({
         <div className='flex w-full h-full flex-col md:flex-row'>
           <div className='flex h-full w-full flex-col md:max-w-[30%] overflow-hidden border-r border-gray-400'>
             {activeListTitles.map((title) => {
-              // Inactive list
+              // Inactive list title
               if (activeListId != parseInt(title.id)) {
                 return (
                   <div
@@ -300,7 +302,7 @@ export default function Page({
                     </div>
                   </div>
                 );
-                // Active list
+                // Active list title
               } else if (activeListId === parseInt(title.id)) {
                 return (
                   <div className='flex flex-col text-base' key={title.id}>
@@ -324,7 +326,7 @@ export default function Page({
                     {/* List items on small screens */}
                     {activeListItems.map((item) => {
                       {
-                        /* incomplete item*/
+                        /* incomplete item - small screen*/
                       }
                       if (item.complete === false) {
                         return (
@@ -365,7 +367,7 @@ export default function Page({
                         );
                       }
                       {
-                        /* complete item*/
+                        /* complete item - small screen */
                       }
                       if (item.complete === true) {
                         return (
@@ -406,6 +408,8 @@ export default function Page({
                         );
                       }
                     })}
+
+                    {/* create new item - small screen */}
                     <div className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400 md:hidden'>
                       <form
                         id='itemInput2'
@@ -434,6 +438,7 @@ export default function Page({
                 );
               }
             })}
+            {/* create new list title */}
             <div className='flex flex-row py-1 text-base bg-gray-300'>
               <form
                 id='titleInput'
@@ -459,11 +464,11 @@ export default function Page({
               </form>
             </div>
           </div>
-          {/* active list items on larger screens */}
+          {/* active list items - large screens */}
           <div className='flex-col w-full h-full bg-gray-100 hidden md:flex'>
-            {activeListItems.map((item, index) => {
+            {activeListItems.map((item) => {
               {
-                /* incomplete item*/
+                /* incomplete item - large screen */
               }
               if (item.complete === false) {
                 return (
@@ -501,7 +506,7 @@ export default function Page({
                 );
               }
               {
-                /* complete item*/
+                /* complete item - large screen */
               }
               if (item.complete === true) {
                 return (
@@ -539,34 +544,37 @@ export default function Page({
                 );
               }
             })}
-            {activeListItems.map((x, index) => {
-              if (index === 1) {
-                return (
-                  <div className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400'>
-                    <form
-                      id='itemInput'
-                      className='flex flex-row w-full'
-                      onSubmit={createItem}
-                    >
-                      <button
-                        className='mr-4 ml-3.5 text-green-500 font-black select-none'
-                        type='submit'
+            {/* New item input - large screen - only needs to render when a list is active */}
+            {[1].map((x, index) => {
+              if (index === 0) {
+                if (activeListId != 0) {
+                  return (
+                    <div className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400'>
+                      <form
+                        id='itemInput'
+                        className='flex flex-row w-full'
+                        onSubmit={createItem}
                       >
-                        &#65291;
-                      </button>
-                      <input
-                        className='bg-transparent outline-none'
-                        type='text'
-                        name='item'
-                        placeholder='New item...'
-                        maxLength={90}
-                        minLength={1}
-                        required
-                        size={30}
-                      />
-                    </form>
-                  </div>
-                );
+                        <button
+                          className='mr-4 ml-3.5 text-green-500 font-black select-none'
+                          type='submit'
+                        >
+                          &#65291;
+                        </button>
+                        <input
+                          className='bg-transparent outline-none'
+                          type='text'
+                          name='item'
+                          placeholder='New item...'
+                          maxLength={90}
+                          minLength={1}
+                          required
+                          size={30}
+                        />
+                      </form>
+                    </div>
+                  );
+                }
               }
             })}
           </div>
