@@ -1,4 +1,4 @@
-import { space } from './fonts';
+import { space } from '../fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { useState, FormEvent } from 'react';
 
