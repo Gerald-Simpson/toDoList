@@ -33,11 +33,11 @@ API_BODY= please see shared in email
 
 Navigate to the /express directory and run:
 
-`npm install`
+`npm install && npx prisma migrate dev --name init'`
 
 Navigate to the /next/toDoList directory and run:
 
-`npx prisma migrate dev --name init'.`
+`npm install`
 
 ## Run the Application
 
