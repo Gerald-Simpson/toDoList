@@ -288,154 +288,12 @@ export default function Page({
           <div className='flex h-full w-full flex-col md:max-w-[30%] overflow-hidden border-r border-gray-400'>
             {activeListTitles.map((title) => {
               // Inactive list title
-              if (activeListId != parseInt(title.id)) {
-                return (
-                  <div
-                    className='flex flex-row py-1 pl-10 text-base bg-gray-300 border-b border-gray-600 select-none'
-                    key={title.id}
-                  >
-                    <div
-                      onClick={() => activateList(parseInt(title.id))}
-                      className='flex flex-row w-full justify-between'
-                    >
-                      <div className='mr-4 select-none'>{title.title}</div>
-                    </div>
-                  </div>
-                );
-                // Active list title
-              } else if (activeListId === parseInt(title.id)) {
-                return (
-                  <div className='flex flex-col text-base' key={title.id}>
-                    <div
-                      className='w-full flex flex-row py-1 pl-3.5 text-base bg-gray-300 border-b border-gray-600 md:bg-gray-200'
-                      key={title.id}
-                      onClick={() => activateList(parseInt(title.id))}
-                    >
-                      <div
-                        className='mr-3.5 text-red-500 text-black select-none'
-                        onClick={() => {
-                          deleteTitle(parseInt(title.id));
-                        }}
-                      >
-                        &#x2715;
-                      </div>
-                      <div className='flex flex-row w-full justify-between'>
-                        <div className='mr-4 select-none'>{title.title}</div>
-                      </div>
-                    </div>
-                    {/* List items on small screens */}
-                    {activeListItems.map((item) => {
-                      {
-                        /* incomplete item - small screen*/
-                      }
-                      if (item.complete === false) {
-                        return (
-                          <div
-                            className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400 md:hidden'
-                            key={item.id}
-                          >
-                            <div
-                              className='ml-4 mr-4 select-none'
-                              onClick={() => {
-                                completeItem(parseInt(item.id), item.complete);
-                              }}
-                            >
-                              &#9744;
-                            </div>
-                            <div className='flex flex-row w-full justify-between'>
-                              <div
-                                className='mr-4 select-none'
-                                onClick={() => {
-                                  completeItem(
-                                    parseInt(item.id),
-                                    item.complete
-                                  );
-                                }}
-                              >
-                                {item.message}
-                              </div>
-                              <div
-                                className='mr-4 text-red-500 text-black select-none'
-                                onClick={() => {
-                                  deleteItem(parseInt(item.id));
-                                }}
-                              >
-                                &#x2715;
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-                      {
-                        /* complete item - small screen */
-                      }
-                      if (item.complete === true) {
-                        return (
-                          <div
-                            className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400 md:hidden'
-                            key={item.id}
-                          >
-                            <div
-                              className='mr-4 ml-4 select-none'
-                              onClick={() => {
-                                completeItem(parseInt(item.id), item.complete);
-                              }}
-                            >
-                              &#9745;
-                            </div>
-                            <div className='flex flex-row w-full justify-between'>
-                              <div
-                                className='select-none'
-                                onClick={() => {
-                                  completeItem(
-                                    parseInt(item.id),
-                                    item.complete
-                                  );
-                                }}
-                              >
-                                {item.message}
-                              </div>
-                              <div
-                                className='mr-4 text-red-500 text-black select-none'
-                                onClick={() => {
-                                  deleteItem(parseInt(item.id));
-                                }}
-                              >
-                                &#x2715;
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-                    })}
-
-                    {/* create new item - small screen */}
-                    <div className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400 md:hidden'>
-                      <form
-                        id='itemInput2'
-                        className='flex flex-row w-full'
-                        onSubmit={createItem}
-                      >
-                        <button
-                          className='mr-4 ml-3.5 text-green-500 font-black select-none'
-                          type='submit'
-                        >
-                          &#65291;
-                        </button>
-                        <input
-                          className='bg-transparent outline-none'
-                          type='text'
-                          name='item'
-                          placeholder='New item...'
-                          maxLength={90}
-                          minLength={1}
-                          required
-                          size={30}
-                        />
-                      </form>
-                    </div>
-                  </div>
-                );
+              if (activeListId !== parseInt(title.id)) {
+                return <ListTitle title={title} active={false} />;
+              }
+              // Active list title
+              if (activeListId === parseInt(title.id)) {
+                return <ListTitle title={title} active={true} />;
               }
             })}
             {/* create new list title */}
@@ -471,77 +329,13 @@ export default function Page({
                 /* incomplete item - large screen */
               }
               if (item.complete === false) {
-                return (
-                  <div
-                    className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400'
-                    key={item.id}
-                  >
-                    <div
-                      className='ml-4 mr-4 select-none'
-                      onClick={() => {
-                        completeItem(parseInt(item.id), item.complete);
-                      }}
-                    >
-                      &#9744;
-                    </div>
-                    <div className='flex flex-row w-full justify-between'>
-                      <div
-                        className='mr-4 select-none'
-                        onClick={() => {
-                          completeItem(parseInt(item.id), item.complete);
-                        }}
-                      >
-                        {item.message}
-                      </div>
-                      <div
-                        className='mr-4 text-red-500 text-black select-none'
-                        onClick={() => {
-                          deleteItem(parseInt(item.id));
-                        }}
-                      >
-                        &#x2715;
-                      </div>
-                    </div>
-                  </div>
-                );
+                return <ListItem item={item} mobile={false} />;
               }
               {
                 /* complete item - large screen */
               }
               if (item.complete === true) {
-                return (
-                  <div
-                    className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
-                    key={item.id}
-                  >
-                    <div
-                      className='mr-4 ml-4 select-none'
-                      onClick={() => {
-                        completeItem(parseInt(item.id), item.complete);
-                      }}
-                    >
-                      &#9745;
-                    </div>
-                    <div className='flex flex-row w-full justify-between'>
-                      <div
-                        className='select-none'
-                        onClick={() => {
-                          completeItem(parseInt(item.id), item.complete);
-                        }}
-                      >
-                        {item.message}
-                      </div>
-                      <div
-                        className='mr-4 text-red-500 text-black select-none'
-                        onClick={() => {
-                          deleteItem(parseInt(item.id));
-                        }}
-                      >
-                        &#x2715;
-                      </div>
-                    </div>
-                  </div>
-                );
+                return <ListItem item={item} mobile={false} />;
               }
             })}
             {/* New item input - large screen - only needs to render when a list is active */}
@@ -582,4 +376,232 @@ export default function Page({
       </div>
     </main>
   );
+
+  function ListTitle(props: { title: listTitles; active: boolean }) {
+    // Inactive list title
+    if (!props.active) {
+      return (
+        <div
+          className='flex flex-row py-1 pl-10 text-base bg-gray-300 border-b border-gray-600 select-none'
+          key={props.title.id}
+        >
+          <div
+            onClick={() => activateList(parseInt(props.title.id))}
+            className='flex flex-row w-full justify-between'
+          >
+            <div className='mr-4 select-none'>{props.title.title}</div>
+          </div>
+        </div>
+      );
+    }
+    // Active list title
+    if (props.active) {
+      return (
+        <div className='flex flex-col text-base' key={props.title.id}>
+          <div
+            className='w-full flex flex-row py-1 pl-3.5 text-base bg-gray-300 border-b border-gray-600 md:bg-gray-200'
+            key={props.title.id}
+            onClick={() => activateList(parseInt(props.title.id))}
+          >
+            <div
+              className='mr-3.5 text-red-500 text-black select-none'
+              onClick={() => {
+                deleteTitle(parseInt(props.title.id));
+              }}
+            >
+              &#x2715;
+            </div>
+            <div className='flex flex-row w-full justify-between'>
+              <div className='mr-4 select-none'>{props.title.title}</div>
+            </div>
+          </div>
+          {/* List items on small screens */}
+          {activeListItems.map((item) => {
+            if (!item.complete) {
+              return <ListItem item={item} mobile={true} />;
+            } else if (item.complete) {
+              return <ListItem item={item} mobile={true} />;
+            }
+          })}
+
+          {/* create new item - small screen */}
+          <div className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400 md:hidden'>
+            <form
+              id='itemInput2'
+              className='flex flex-row w-full'
+              onSubmit={createItem}
+            >
+              <button
+                className='mr-4 ml-3.5 text-green-500 font-black select-none'
+                type='submit'
+              >
+                &#65291;
+              </button>
+              <input
+                className='bg-transparent outline-none'
+                type='text'
+                name='item'
+                placeholder='New item...'
+                maxLength={90}
+                minLength={1}
+                required
+                size={30}
+              />
+            </form>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  function ListItem(props: { item: listItems; mobile: boolean }) {
+    {
+      /* incomplete item - small screen*/
+    }
+    if (props.item.complete === false && props.mobile) {
+      return (
+        <div
+          className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400 md:hidden'
+          key={props.item.id}
+        >
+          <div
+            className='ml-4 mr-4 select-none'
+            onClick={() => {
+              completeItem(parseInt(props.item.id), props.item.complete);
+            }}
+          >
+            &#9744;
+          </div>
+          <div className='flex flex-row w-full justify-between'>
+            <div
+              className='mr-4 select-none'
+              onClick={() => {
+                completeItem(parseInt(props.item.id), props.item.complete);
+              }}
+            >
+              {props.item.message}
+            </div>
+            <div
+              className='mr-4 text-red-500 text-black select-none'
+              onClick={() => {
+                deleteItem(parseInt(props.item.id));
+              }}
+            >
+              &#x2715;
+            </div>
+          </div>
+        </div>
+      );
+    }
+    {
+      /* complete item - small screen */
+    }
+    if (props.item.complete === true && props.mobile) {
+      return (
+        <div
+          className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400 md:hidden'
+          key={props.item.id}
+        >
+          <div
+            className='mr-4 ml-4 select-none'
+            onClick={() => {
+              completeItem(parseInt(props.item.id), props.item.complete);
+            }}
+          >
+            &#9745;
+          </div>
+          <div className='flex flex-row w-full justify-between'>
+            <div
+              className='select-none'
+              onClick={() => {
+                completeItem(parseInt(props.item.id), props.item.complete);
+              }}
+            >
+              {props.item.message}
+            </div>
+            <div
+              className='mr-4 text-red-500 text-black select-none'
+              onClick={() => {
+                deleteItem(parseInt(props.item.id));
+              }}
+            >
+              &#x2715;
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // incomplete item - large screen
+    if (!props.item.complete && !props.mobile) {
+      return (
+        <div
+          className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400'
+          key={props.item.id}
+        >
+          <div
+            className='ml-4 mr-4 select-none'
+            onClick={() => {
+              completeItem(parseInt(props.item.id), props.item.complete);
+            }}
+          >
+            &#9744;
+          </div>
+          <div className='flex flex-row w-full justify-between'>
+            <div
+              className='mr-4 select-none'
+              onClick={() => {
+                completeItem(parseInt(props.item.id), props.item.complete);
+              }}
+            >
+              {props.item.message}
+            </div>
+            <div
+              className='mr-4 text-red-500 text-black select-none'
+              onClick={() => {
+                deleteItem(parseInt(props.item.id));
+              }}
+            >
+              &#x2715;
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // complete item - large screen
+    if (props.item.complete && !props.mobile) {
+      return (
+        <div
+          className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
+          key={props.item.id}
+        >
+          <div
+            className='mr-4 ml-4 select-none'
+            onClick={() => {
+              completeItem(parseInt(props.item.id), props.item.complete);
+            }}
+          >
+            &#9745;
+          </div>
+          <div className='flex flex-row w-full justify-between'>
+            <div
+              className='select-none'
+              onClick={() => {
+                completeItem(parseInt(props.item.id), props.item.complete);
+              }}
+            >
+              {props.item.message}
+            </div>
+            <div
+              className='mr-4 text-red-500 text-black select-none'
+              onClick={() => {
+                deleteItem(parseInt(props.item.id));
+              }}
+            >
+              &#x2715;
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
 }
