@@ -1,4 +1,5 @@
 import { listTitles } from '../_serverFunctions/models.ts';
+import { FormEvent, FormEventHandler } from 'react';
 
 export default function ListTitle(props: {
   title: listTitles;
@@ -7,6 +8,7 @@ export default function ListTitle(props: {
   deleteTitleUpdate: Function;
   cookieId: string;
   apiAccessToken: string;
+  createItemUpdate: Function;
 }) {
   // Inactive list title
   if (!props.active) {
@@ -49,41 +51,38 @@ export default function ListTitle(props: {
             <div className='mr-4 select-none'>{props.title.title}</div>
           </div>
         </div>
-        {/* List items on small screens */}
-        {activeListItems.map((item) => {
-          if (!item.complete) {
-            return <ListItem item={item} mobile={true} />;
-          } else if (item.complete) {
-            return <ListItem item={item} mobile={true} />;
-          }
-        })}
-
-        {/* create new item - small screen */}
-        <div className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400 md:hidden'>
-          <form
-            id='itemInput2'
-            className='flex flex-row w-full'
-            onSubmit={createItemUpdate}
-          >
-            <button
-              className='mr-4 ml-3.5 text-green-500 font-black select-none'
-              type='submit'
-            >
-              &#65291;
-            </button>
-            <input
-              className='bg-transparent outline-none'
-              type='text'
-              name='item'
-              placeholder='New item...'
-              maxLength={90}
-              minLength={1}
-              required
-              size={30}
-            />
-          </form>
-        </div>
       </div>
     );
   }
+}
+
+export function NewTitle(props: {
+  createTitleUpdate: FormEventHandler<HTMLFormElement>;
+}) {
+  return (
+    <div className='flex flex-row py-1 text-base bg-gray-300'>
+      <form
+        id='titleInput'
+        className='flex flex-row w-full'
+        onSubmit={props.createTitleUpdate}
+      >
+        <button
+          className='mr-3 ml-3.5 text-green-500 font-black select-none'
+          type='submit'
+        >
+          &#65291;
+        </button>
+        <input
+          className='bg-transparent outline-none'
+          type='text'
+          name='title'
+          placeholder='New list...'
+          maxLength={30}
+          minLength={1}
+          required
+          size={30}
+        />
+      </form>
+    </div>
+  );
 }

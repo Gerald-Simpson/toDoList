@@ -13,12 +13,13 @@ import {
   createTitle,
   createItem,
 } from '../_serverFunctions/controllerFunctions.ts';
-import {
-  listTitles,
-  listItems,
-  tokenResponse,
-} from '../_serverFunctions/models.ts';
-import ListItem from '../_componenets/listItem.tsx';
+import { listTitles, listItems } from '../_serverFunctions/models.ts';
+import ListItem, {
+  ListItemsCombinedMobile,
+  NewItemMobile,
+  NewItemLarge,
+} from '../_components/listItemComponents.tsx';
+import ListTitle, { NewTitle } from '../_components/listTitleComponents.tsx';
 
 export const getServerSideProps = (async (context) => {
   // using cookie middleware to assign an id that is used to load users lists
@@ -146,7 +147,7 @@ export default function Page({
     }
   }
 
-  async function createItemUpdate(event: FormEvent<HTMLFormElement>) {
+  const createItemUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -172,7 +173,7 @@ export default function Page({
         return;
       }
     }
-  }
+  };
 
   async function activateList(id: number) {
     if (activeListId !== id) {
@@ -194,220 +195,76 @@ export default function Page({
             {activeListTitles.map((title) => {
               // Inactive list title
               if (activeListId !== parseInt(title.id)) {
-                return <ListTitle title={title} active={false} />;
+                return (
+                  <ListTitle
+                    title={title}
+                    active={false}
+                    activateList={activateList}
+                    deleteTitleUpdate={deleteTitleUpdate}
+                    cookieId={cookieId}
+                    apiAccessToken={apiAccessToken}
+                    createItemUpdate={createItemUpdate}
+                  />
+                );
               }
               // Active list title
               if (activeListId === parseInt(title.id)) {
-                return <ListTitle title={title} active={true} />;
+                return (
+                  <div>
+                    <ListTitle
+                      title={title}
+                      active={true}
+                      activateList={activateList}
+                      deleteTitleUpdate={deleteTitleUpdate}
+                      cookieId={cookieId}
+                      apiAccessToken={apiAccessToken}
+                      createItemUpdate={createItemUpdate}
+                    />
+                    {/* list items - only rendered for mobile */}
+                    <ListItemsCombinedMobile
+                      cookieId={cookieId}
+                      apiAccessToken={apiAccessToken}
+                      activeListItems={activeListItems}
+                      completeItemUpdate={completeItemUpdate}
+                      deleteItemUpdate={deleteItemUpdate}
+                    />
+                    {/* new item - only rendered for mobile */}
+                    <NewItemMobile createItemUpdate={createItemUpdate} />
+                  </div>
+                );
               }
             })}
             {/* create new list title */}
-            <div className='flex flex-row py-1 text-base bg-gray-300'>
-              <form
-                id='titleInput'
-                className='flex flex-row w-full'
-                onSubmit={createTitleUpdate}
-              >
-                <button
-                  className='mr-3 ml-3.5 text-green-500 font-black select-none'
-                  type='submit'
-                >
-                  &#65291;
-                </button>
-                <input
-                  className='bg-transparent outline-none'
-                  type='text'
-                  name='title'
-                  placeholder='New list...'
-                  maxLength={30}
-                  minLength={1}
-                  required
-                  size={30}
-                />
-              </form>
-            </div>
+            <NewTitle createTitleUpdate={createTitleUpdate} />
           </div>
           {/* active list items - large screens */}
           <div className='flex-col w-full h-full bg-gray-100 hidden md:flex'>
             {activeListItems.map((item) => {
               {
-                /* incomplete item - large screen */
+                /* item - large screen */
               }
-              if (item.complete === false) {
-                return (
-                  <ListItem
-                    item={item}
-                    mobile={false}
-                    complete={false}
-                    cookieId={cookieId}
-                    apiAccessToken={apiAccessToken}
-                    id={item.id}
-                    message={item.message}
-                    completeItemUpdate={completeItemUpdate}
-                    deleteItemUpdate={deleteItemUpdate}
-                  />
-                );
-              }
-              {
-                /* complete item - large screen */
-              }
-              if (item.complete === true) {
-                return (
-                  <ListItem
-                    item={item}
-                    mobile={false}
-                    complete={true}
-                    cookieId={cookieId}
-                    apiAccessToken={apiAccessToken}
-                    id={item.id}
-                    message={item.message}
-                    completeItemUpdate={completeItemUpdate}
-                    deleteItemUpdate={deleteItemUpdate}
-                  />
-                );
-              }
+              return (
+                <ListItem
+                  item={item}
+                  mobile={false}
+                  complete={item.complete}
+                  cookieId={cookieId}
+                  apiAccessToken={apiAccessToken}
+                  id={item.id}
+                  message={item.message}
+                  completeItemUpdate={completeItemUpdate}
+                  deleteItemUpdate={deleteItemUpdate}
+                />
+              );
             })}
-            {/* New item input - large screen - only needs to render when a list is active */}
-            {[1].map((x, index) => {
-              if (index === 0) {
-                if (activeListId != 0) {
-                  return (
-                    <div className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400'>
-                      <form
-                        id='itemInput'
-                        className='flex flex-row w-full'
-                        onSubmit={createItemUpdate}
-                      >
-                        <button
-                          className='mr-4 ml-3.5 text-green-500 font-black select-none'
-                          type='submit'
-                        >
-                          &#65291;
-                        </button>
-                        <input
-                          className='bg-transparent outline-none'
-                          type='text'
-                          name='item'
-                          placeholder='New item...'
-                          maxLength={90}
-                          minLength={1}
-                          required
-                          size={30}
-                        />
-                      </form>
-                    </div>
-                  );
-                }
-              }
-            })}
+            {/* New item input - only renders for large screen & when a list is active */}
+            <NewItemLarge
+              createItemUpdate={createItemUpdate}
+              activeListId={activeListId}
+            />
           </div>
         </div>
       </div>
     </main>
   );
-
-  function ListTitle(props: { title: listTitles; active: boolean }) {
-    // Inactive list title
-    if (!props.active) {
-      return (
-        <div
-          className='flex flex-row py-1 pl-10 text-base bg-gray-300 border-b border-gray-600 select-none'
-          key={props.title.id}
-        >
-          <div
-            onClick={() => activateList(parseInt(props.title.id))}
-            className='flex flex-row w-full justify-between'
-          >
-            <div className='mr-4 select-none'>{props.title.title}</div>
-          </div>
-        </div>
-      );
-    }
-    // Active list title
-    if (props.active) {
-      return (
-        <div className='flex flex-col text-base' key={props.title.id}>
-          <div
-            className='w-full flex flex-row py-1 pl-3.5 text-base bg-gray-300 border-b border-gray-600 md:bg-gray-200'
-            key={props.title.id}
-            onClick={() => activateList(parseInt(props.title.id))}
-          >
-            <div
-              className='mr-3.5 text-red-500 text-black select-none'
-              onClick={() => {
-                deleteTitleUpdate(
-                  cookieId,
-                  parseInt(props.title.id),
-                  apiAccessToken,
-                );
-              }}
-            >
-              &#x2715;
-            </div>
-            <div className='flex flex-row w-full justify-between'>
-              <div className='mr-4 select-none'>{props.title.title}</div>
-            </div>
-          </div>
-          {/* List items on small screens */}
-          {activeListItems.map((item) => {
-            if (!item.complete) {
-              return (
-                <ListItem
-                  item={item}
-                  mobile={true}
-                  complete={false}
-                  cookieId={cookieId}
-                  apiAccessToken={apiAccessToken}
-                  id={item.id}
-                  message={item.message}
-                  completeItemUpdate={completeItemUpdate}
-                  deleteItemUpdate={deleteItemUpdate}
-                />
-              );
-            } else if (item.complete) {
-              return (
-                <ListItem
-                  item={item}
-                  mobile={true}
-                  complete={true}
-                  cookieId={cookieId}
-                  apiAccessToken={apiAccessToken}
-                  id={item.id}
-                  message={item.message}
-                  completeItemUpdate={completeItemUpdate}
-                  deleteItemUpdate={deleteItemUpdate}
-                />
-              );
-            }
-          })}
-
-          {/* create new item - small screen */}
-          <div className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400 md:hidden'>
-            <form
-              id='itemInput2'
-              className='flex flex-row w-full'
-              onSubmit={createItemUpdate}
-            >
-              <button
-                className='mr-4 ml-3.5 text-green-500 font-black select-none'
-                type='submit'
-              >
-                &#65291;
-              </button>
-              <input
-                className='bg-transparent outline-none'
-                type='text'
-                name='item'
-                placeholder='New item...'
-                maxLength={90}
-                minLength={1}
-                required
-                size={30}
-              />
-            </form>
-          </div>
-        </div>
-      );
-    }
-  }
 }
