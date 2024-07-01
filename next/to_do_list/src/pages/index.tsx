@@ -1,62 +1,46 @@
 import { space } from '../fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { useState, FormEvent } from 'react';
-
-type listTitles = {
-  id: string;
-  cookieId: string;
-  createdAt: Date;
-  title: string;
-};
-
-type listItems = {
-  id: string;
-  titleId: number;
-  cookieId: string;
-  createdAt: Date;
-  message: string;
-  complete: boolean;
-};
-
-type tokenResponse = {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
-};
+import { useState, useEffect, FormEvent } from 'react';
+import {
+  fetchListTitles,
+  fetchItems,
+} from '../_serverFunctions/viewFunctions.ts';
+import { fetchApiAccessToken } from '../_serverFunctions/authFunctions.ts';
+import {
+  deleteTitle,
+  deleteItem,
+  completeItem,
+  createTitle,
+  createItem,
+} from '../_serverFunctions/controllerFunctions.ts';
+import {
+  listTitles,
+  listItems,
+  tokenResponse,
+} from '../_serverFunctions/models.ts';
+import ListItem from '../_componenets/listItem.tsx';
 
 export const getServerSideProps = (async (context) => {
   // using cookie middleware to assign an id that is used to load users lists
-  let cookieId = context.req.cookies.id;
+  let cookieId: string = '';
+  if (typeof context.req.cookies.id === 'string') {
+    cookieId = context.req.cookies.id;
+  }
+
   // on first load, cookieId will be undefined, so extracted from headers.
   let firstLoadCookieId = context.res.getHeader('set-cookie');
-  if (!cookieId && typeof firstLoadCookieId === 'object') {
+  if (!context.req.cookies.id && typeof firstLoadCookieId === 'object') {
     cookieId = firstLoadCookieId[0].slice(3, -8);
   }
 
   // fetching token to access api to pass to client side
-  const tokenRes = await fetch(process.env.API_POST_URL!, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: process.env.API_BODY,
-  });
+  let apiAccessToken: string = await fetchApiAccessToken();
 
-  const tempRes: tokenResponse = await tokenRes.json();
-  const apiAccessToken: string = 'BEARER ' + tempRes.access_token;
-
-  // fetching list titles on server before first load
-  let getUrl: string =
-    process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
-    '/fetchLists/?cookieId=' +
-    cookieId;
-
-  const res = await fetch(getUrl, {
-    method: 'GET',
-    headers: {
-      authorization: apiAccessToken!,
-    },
-  });
-
-  const listTitles: { listTitles: listTitles[] } = await res.json();
+  // Fetch listTitles
+  let listTitles: { listTitles: listTitles[] } = await fetchListTitles(
+    cookieId,
+    apiAccessToken,
+  );
 
   return {
     props: {
@@ -81,175 +65,101 @@ export default function Page({
   const [activeListTitles, setActiveListTitles] =
     useState<listTitles[]>(listTitles);
 
-  async function deleteTitle(id: number) {
-    let deleteTitleUrl: string =
-      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
-      '/deleteTitle/?id=' +
-      id.toString() +
-      '&cookieId=' +
-      cookieId;
-
-    const res = await fetch(deleteTitleUrl, {
-      method: 'DELETE',
-      headers: {
-        authorization: apiAccessToken,
-      },
-    });
-    if (res.status === 200) {
-      if (typeof cookieId === 'string') {
-        await updateTitles();
-      }
-      return;
-    } else {
-      console.error(res);
-      return res.status;
-    }
-  }
-
-  async function deleteItem(id: number) {
-    let deleteItemUrl: string =
-      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
-      '/deleteItem/?id=' +
-      id.toString() +
-      '&cookieId=' +
-      cookieId;
-
-    const res = await fetch(deleteItemUrl, {
-      method: 'DELETE',
-      headers: {
-        authorization: apiAccessToken!,
-      },
-    });
-    if (res.status === 200) {
-      setActiveListItems(await getItems(activeListId));
-      return;
-    } else {
-      console.error(res);
-      return res.status;
-    }
-  }
-
   async function updateTitles() {
-    let updateUrl: string =
-      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME! +
-      '/fetchLists/?cookieId=' +
-      cookieId;
-
-    const res = await fetch(updateUrl, {
-      method: 'GET',
-      headers: {
-        authorization: apiAccessToken!,
-      },
-    });
-    const tempRes: any = await res.json();
-    const listTitles: listTitles[] = tempRes.listTitles;
-    setActiveListTitles(listTitles);
+    const listTitles: { listTitles: listTitles[] } = await fetchListTitles(
+      cookieId,
+      apiAccessToken,
+    );
+    setActiveListTitles(listTitles.listTitles);
     return;
   }
 
-  async function getItems(titleId: number) {
-    let getUrl: string =
-      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
-      '/fetchItems/?titleId=' +
-      titleId +
-      '&cookieId=' +
-      cookieId;
-
-    const res = await fetch(getUrl, {
-      method: 'GET',
-      headers: {
-        authorization: apiAccessToken!,
-      },
-    });
-    const tempRes: any = await res.json();
-    const listItems: listItems[] = tempRes.listItems;
-    return listItems;
+  async function updateItems() {
+    setActiveListItems(
+      await fetchItems(activeListId, cookieId, apiAccessToken),
+    );
   }
 
-  async function completeItem(id: number, currentBool: boolean) {
-    let completeBool: string = '';
-    if (currentBool) {
-      completeBool = '0';
-    } else if (!currentBool) {
-      completeBool = '1';
+  // Updates activeListItems when activeListId changes
+  useEffect(() => {
+    async function test() {
+      setActiveListItems(
+        await fetchItems(activeListId, cookieId, apiAccessToken),
+      );
     }
-    let completeUrl: string =
-      process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
-      '/complete/?id=' +
-      id +
-      '&completeBool=' +
-      completeBool +
-      '&cookieId=' +
-      cookieId;
-    const res = await fetch(completeUrl, {
-      method: 'PATCH',
-      headers: {
-        authorization: apiAccessToken!,
-      },
-    });
-    if (res.status === 200) {
-      setActiveListItems(await getItems(activeListId));
-      return;
-    } else {
-      console.error(res);
-      return res.status;
+    test();
+  }, [activeListId]);
+
+  async function deleteTitleUpdate(
+    cookieId: string,
+    id: number,
+    apiAccessToken: string,
+  ) {
+    let resStatus = await deleteTitle(cookieId, id, apiAccessToken);
+    if (resStatus == 200) {
+      updateTitles();
     }
   }
 
-  async function createTitle(event: FormEvent<HTMLFormElement>) {
+  async function deleteItemUpdate(
+    cookieId: string,
+    id: number,
+    apiAccessToken: string,
+  ) {
+    let resStatus = await deleteItem(id, cookieId, apiAccessToken);
+    if (resStatus == 200) {
+      updateItems();
+    }
+  }
+
+  async function completeItemUpdate(
+    id: number,
+    currentBool: boolean,
+    cookieId: string,
+    apiAccessToken: string,
+  ) {
+    let resStatus = await completeItem(
+      id,
+      currentBool,
+      cookieId,
+      apiAccessToken,
+    );
+
+    if (resStatus == 200) {
+      updateItems();
+    }
+  }
+
+  async function createTitleUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    if (typeof formData.get('title') === 'string') {
-      let createUrl: string =
-        process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
-        '/createTitle/?cookieId=' +
-        cookieId +
-        '&title=' +
-        formData.get('title');
-
-      const res = await fetch(createUrl, {
-        method: 'POST',
-        headers: {
-          authorization: apiAccessToken!,
-        },
-      });
-
-      if (res.status === 200) {
+    let title = formData.get('title');
+    if (typeof title === 'string') {
+      let resStatus = await createTitle(title, cookieId, apiAccessToken);
+      if (resStatus == 200) {
         //@ts-ignore
         document.getElementById('titleInput').reset();
         updateTitles();
         return;
-      } else {
-        console.error(res);
-        return res.status;
       }
     }
   }
 
-  async function createItem(event: FormEvent<HTMLFormElement>) {
+  async function createItemUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    if (typeof formData.get('item') === 'string') {
-      let createUrl: string =
-        process.env.NEXT_PUBLIC_EXPRESS_HOST_NAME +
-        '/createItem/?titleId=' +
-        activeListId +
-        '&message=' +
-        formData.get('item') +
-        '&cookieId=' +
-        cookieId;
+    let message = formData.get('item');
+    if (typeof message === 'string') {
+      let resStatus = await createItem(
+        activeListId,
+        message,
+        cookieId,
+        apiAccessToken,
+      );
 
-      const res = await fetch(createUrl, {
-        method: 'POST',
-        headers: {
-          authorization: apiAccessToken!,
-        },
-      });
-
-      if (res.status === 200) {
-        setActiveListItems(await getItems(activeListId));
+      if (resStatus == 200) {
         if (document.getElementById('itemInput')) {
           //@ts-ignore
           document.getElementById('itemInput').reset();
@@ -258,22 +168,17 @@ export default function Page({
           //@ts-ignore
           document.getElementById('itemInput2').reset();
         }
+        updateItems();
         return;
-      } else {
-        console.error(res);
-        return res.status;
       }
     }
   }
 
   async function activateList(id: number) {
-    if (activeListId != id) {
+    if (activeListId !== id) {
       setActiveListId(id);
-      let listItems: listItems[] = await getItems(id);
-      setActiveListItems(listItems);
-    } else if (activeListId === id) {
+    } else if (activeListId == id) {
       setActiveListId(0);
-      setActiveListItems([]);
     }
     return activeListItems;
   }
@@ -301,7 +206,7 @@ export default function Page({
               <form
                 id='titleInput'
                 className='flex flex-row w-full'
-                onSubmit={createTitle}
+                onSubmit={createTitleUpdate}
               >
                 <button
                   className='mr-3 ml-3.5 text-green-500 font-black select-none'
@@ -329,13 +234,37 @@ export default function Page({
                 /* incomplete item - large screen */
               }
               if (item.complete === false) {
-                return <ListItem item={item} mobile={false} />;
+                return (
+                  <ListItem
+                    item={item}
+                    mobile={false}
+                    complete={false}
+                    cookieId={cookieId}
+                    apiAccessToken={apiAccessToken}
+                    id={item.id}
+                    message={item.message}
+                    completeItemUpdate={completeItemUpdate}
+                    deleteItemUpdate={deleteItemUpdate}
+                  />
+                );
               }
               {
                 /* complete item - large screen */
               }
               if (item.complete === true) {
-                return <ListItem item={item} mobile={false} />;
+                return (
+                  <ListItem
+                    item={item}
+                    mobile={false}
+                    complete={true}
+                    cookieId={cookieId}
+                    apiAccessToken={apiAccessToken}
+                    id={item.id}
+                    message={item.message}
+                    completeItemUpdate={completeItemUpdate}
+                    deleteItemUpdate={deleteItemUpdate}
+                  />
+                );
               }
             })}
             {/* New item input - large screen - only needs to render when a list is active */}
@@ -347,7 +276,7 @@ export default function Page({
                       <form
                         id='itemInput'
                         className='flex flex-row w-full'
-                        onSubmit={createItem}
+                        onSubmit={createItemUpdate}
                       >
                         <button
                           className='mr-4 ml-3.5 text-green-500 font-black select-none'
@@ -406,7 +335,11 @@ export default function Page({
             <div
               className='mr-3.5 text-red-500 text-black select-none'
               onClick={() => {
-                deleteTitle(parseInt(props.title.id));
+                deleteTitleUpdate(
+                  cookieId,
+                  parseInt(props.title.id),
+                  apiAccessToken,
+                );
               }}
             >
               &#x2715;
@@ -418,9 +351,33 @@ export default function Page({
           {/* List items on small screens */}
           {activeListItems.map((item) => {
             if (!item.complete) {
-              return <ListItem item={item} mobile={true} />;
+              return (
+                <ListItem
+                  item={item}
+                  mobile={true}
+                  complete={false}
+                  cookieId={cookieId}
+                  apiAccessToken={apiAccessToken}
+                  id={item.id}
+                  message={item.message}
+                  completeItemUpdate={completeItemUpdate}
+                  deleteItemUpdate={deleteItemUpdate}
+                />
+              );
             } else if (item.complete) {
-              return <ListItem item={item} mobile={true} />;
+              return (
+                <ListItem
+                  item={item}
+                  mobile={true}
+                  complete={true}
+                  cookieId={cookieId}
+                  apiAccessToken={apiAccessToken}
+                  id={item.id}
+                  message={item.message}
+                  completeItemUpdate={completeItemUpdate}
+                  deleteItemUpdate={deleteItemUpdate}
+                />
+              );
             }
           })}
 
@@ -429,7 +386,7 @@ export default function Page({
             <form
               id='itemInput2'
               className='flex flex-row w-full'
-              onSubmit={createItem}
+              onSubmit={createItemUpdate}
             >
               <button
                 className='mr-4 ml-3.5 text-green-500 font-black select-none'
@@ -448,157 +405,6 @@ export default function Page({
                 size={30}
               />
             </form>
-          </div>
-        </div>
-      );
-    }
-  }
-
-  function ListItem(props: { item: listItems; mobile: boolean }) {
-    {
-      /* incomplete item - small screen*/
-    }
-    if (props.item.complete === false && props.mobile) {
-      return (
-        <div
-          className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400 md:hidden'
-          key={props.item.id}
-        >
-          <div
-            className='ml-4 mr-4 select-none'
-            onClick={() => {
-              completeItem(parseInt(props.item.id), props.item.complete);
-            }}
-          >
-            &#9744;
-          </div>
-          <div className='flex flex-row w-full justify-between'>
-            <div
-              className='mr-4 select-none'
-              onClick={() => {
-                completeItem(parseInt(props.item.id), props.item.complete);
-              }}
-            >
-              {props.item.message}
-            </div>
-            <div
-              className='mr-4 text-red-500 text-black select-none'
-              onClick={() => {
-                deleteItem(parseInt(props.item.id));
-              }}
-            >
-              &#x2715;
-            </div>
-          </div>
-        </div>
-      );
-    }
-    {
-      /* complete item - small screen */
-    }
-    if (props.item.complete === true && props.mobile) {
-      return (
-        <div
-          className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400 md:hidden'
-          key={props.item.id}
-        >
-          <div
-            className='mr-4 ml-4 select-none'
-            onClick={() => {
-              completeItem(parseInt(props.item.id), props.item.complete);
-            }}
-          >
-            &#9745;
-          </div>
-          <div className='flex flex-row w-full justify-between'>
-            <div
-              className='select-none'
-              onClick={() => {
-                completeItem(parseInt(props.item.id), props.item.complete);
-              }}
-            >
-              {props.item.message}
-            </div>
-            <div
-              className='mr-4 text-red-500 text-black select-none'
-              onClick={() => {
-                deleteItem(parseInt(props.item.id));
-              }}
-            >
-              &#x2715;
-            </div>
-          </div>
-        </div>
-      );
-    }
-    // incomplete item - large screen
-    if (!props.item.complete && !props.mobile) {
-      return (
-        <div
-          className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400'
-          key={props.item.id}
-        >
-          <div
-            className='ml-4 mr-4 select-none'
-            onClick={() => {
-              completeItem(parseInt(props.item.id), props.item.complete);
-            }}
-          >
-            &#9744;
-          </div>
-          <div className='flex flex-row w-full justify-between'>
-            <div
-              className='mr-4 select-none'
-              onClick={() => {
-                completeItem(parseInt(props.item.id), props.item.complete);
-              }}
-            >
-              {props.item.message}
-            </div>
-            <div
-              className='mr-4 text-red-500 text-black select-none'
-              onClick={() => {
-                deleteItem(parseInt(props.item.id));
-              }}
-            >
-              &#x2715;
-            </div>
-          </div>
-        </div>
-      );
-    }
-    // complete item - large screen
-    if (props.item.complete && !props.mobile) {
-      return (
-        <div
-          className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
-          key={props.item.id}
-        >
-          <div
-            className='mr-4 ml-4 select-none'
-            onClick={() => {
-              completeItem(parseInt(props.item.id), props.item.complete);
-            }}
-          >
-            &#9745;
-          </div>
-          <div className='flex flex-row w-full justify-between'>
-            <div
-              className='select-none'
-              onClick={() => {
-                completeItem(parseInt(props.item.id), props.item.complete);
-              }}
-            >
-              {props.item.message}
-            </div>
-            <div
-              className='mr-4 text-red-500 text-black select-none'
-              onClick={() => {
-                deleteItem(parseInt(props.item.id));
-              }}
-            >
-              &#x2715;
-            </div>
           </div>
         </div>
       );
