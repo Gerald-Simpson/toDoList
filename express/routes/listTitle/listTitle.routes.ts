@@ -1,16 +1,14 @@
 import express, { Express, Request, Response } from 'express';
 import { checkJwt } from '../auth/auth';
-const listTitleController = require('./listTitle.controller.ts');
+import { listTitleController } from './listTitle.controller';
 
-const router = express.Router();
+export const listTitleRouter = express.Router();
 
 // Fetch all listTitles
-router.get('/fetchLists/', checkJwt, listTitleController.get);
+listTitleRouter.get('/fetchLists/', checkJwt, listTitleController.get);
 //
 // Create new listTitle
-router.post('/createTitle/', checkJwt, listTitleController.post);
+listTitleRouter.post('/createTitle/', checkJwt, listTitleController.post);
 
 // Delete listTitle
-router.delete('/deleteItem/', checkJwt, listTitleController.remove);
-
-module.exports = router;
+listTitleRouter.delete('/deleteItem/', checkJwt, listTitleController.remove);

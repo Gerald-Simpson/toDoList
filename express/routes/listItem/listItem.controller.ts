@@ -10,6 +10,13 @@ import {
 import { singleTitleSchema } from '../listTitle/listTitle.models';
 import { prisma } from '../../app';
 
+export let listItemController = {
+  get: get,
+  post: post,
+  remove: remove,
+  patch: patch,
+};
+
 async function get(req: Request, res: Response) {
   async function getItems() {
     idSchema.parse(req.query.titleId);
@@ -147,5 +154,3 @@ async function patch(req: Request, res: Response) {
       process.exit(1);
     });
 }
-
-module.exports = { get, post, remove, patch };

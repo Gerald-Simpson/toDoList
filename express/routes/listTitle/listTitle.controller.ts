@@ -8,6 +8,8 @@ import {
 import { singleItemSchema } from '../listItem/listItem.models';
 import { prisma } from '../../app';
 
+export let listTitleController = { get: get, post: post, remove: remove };
+
 async function get(req: Request, res: Response) {
   async function getLists() {
     cookieSchema.parse(req.query.cookieId);
@@ -95,5 +97,3 @@ async function remove(req: Request, res: Response) {
       process.exit(1);
     });
 }
-
-module.exports = { get, post, remove };
