@@ -1,3 +1,0 @@
-PORT=3001
-DATABASE_URL=mysql://{mysql username}:{mysql password}@{mysql uri and port if locally running eg 'localhost:3006'}/toDoList
-

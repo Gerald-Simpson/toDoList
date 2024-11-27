@@ -18,7 +18,7 @@ export default function ListItem(props: {
   if (props.complete === false && props.mobile) {
     return (
       <div
-        className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400 md:hidden'
+        className='flex flex-row py-1.5 bg-blue-50 text-base bg-sm md:hidden'
         key={props.id}
       >
         <div
@@ -36,7 +36,7 @@ export default function ListItem(props: {
         </div>
         <div className='flex flex-row w-full justify-between'>
           <div
-            className='mr-4 select-none'
+            className='mr-4 font-light select-none'
             onClick={() => {
               props.completeItemUpdate(
                 parseInt(props.id),
@@ -49,7 +49,7 @@ export default function ListItem(props: {
             {props.message}
           </div>
           <div
-            className='mr-4 text-red-500 text-black select-none'
+            className='mr-4 text-rose-700 text-black select-none'
             onClick={() => {
               props.deleteItemUpdate(
                 props.cookieId,
@@ -70,7 +70,7 @@ export default function ListItem(props: {
   if (props.complete === true && props.mobile) {
     return (
       <div
-        className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400 md:hidden'
+        className='flex flex-row py-1.5 bg-blue-50 md:bg-white text-base text-black/50 bg-white md:hidden'
         key={props.id}
       >
         <div
@@ -88,7 +88,7 @@ export default function ListItem(props: {
         </div>
         <div className='flex flex-row w-full justify-between'>
           <div
-            className='select-none'
+            className='select-none font-light'
             onClick={() => {
               props.completeItemUpdate(
                 parseInt(props.id),
@@ -101,7 +101,7 @@ export default function ListItem(props: {
             {props.message}
           </div>
           <div
-            className='mr-4 text-red-500 text-black select-none'
+            className='mr-4 text-rose-700 text-black select-none'
             onClick={() => {
               props.deleteItemUpdate(
                 props.cookieId,
@@ -120,7 +120,7 @@ export default function ListItem(props: {
   if (!props.complete && !props.mobile) {
     return (
       <div
-        className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400'
+        className='flex flex-row py-1 text-lg bg-white items-center'
         key={props.id}
       >
         <div
@@ -138,7 +138,7 @@ export default function ListItem(props: {
         </div>
         <div className='flex flex-row w-full justify-between'>
           <div
-            className='mr-4 select-none'
+            className='mr-4 font-light select-none'
             onClick={() => {
               props.completeItemUpdate(
                 parseInt(props.id),
@@ -151,7 +151,7 @@ export default function ListItem(props: {
             {props.message}
           </div>
           <div
-            className='mr-4 text-red-500 text-black select-none'
+            className='mr-4 text-rose-700 text-2xl text-black select-none'
             onClick={() => {
               props.deleteItemUpdate(
                 props.cookieId,
@@ -170,7 +170,7 @@ export default function ListItem(props: {
   if (props.complete && !props.mobile) {
     return (
       <div
-        className='flex flex-row py-1.5 text-sm text-black/50 bg-gray-200 border-b border-gray-400'
+        className='flex flex-row py-1 text-lg text-black/50 bg-white'
         key={props.id}
       >
         <div
@@ -188,7 +188,7 @@ export default function ListItem(props: {
         </div>
         <div className='flex flex-row w-full justify-between'>
           <div
-            className='select-none'
+            className='font-light select-none'
             onClick={() => {
               props.completeItemUpdate(
                 parseInt(props.id),
@@ -201,7 +201,7 @@ export default function ListItem(props: {
             {props.message}
           </div>
           <div
-            className='mr-4 text-red-500 text-black select-none'
+            className='mr-4 text-rose-700 text-2xl text-black select-none'
             onClick={() => {
               props.deleteItemUpdate(
                 props.cookieId,
@@ -248,20 +248,20 @@ export function NewItemMobile(props: {
   createItemUpdate: FormEventHandler<HTMLFormElement>;
 }) {
   return (
-    <div className='flex flex-row py-2 text-sm bg-gray-200 border-b border-gray-400 md:hidden'>
+    <div className='flex flex-row py-0.5 text-base bg-blue-50 border-b border-indigo-100 md:hidden'>
       <form
         id='itemInput2'
         className='flex flex-row w-full'
         onSubmit={props.createItemUpdate}
       >
         <button
-          className='mr-4 ml-3.5 text-green-500 font-black select-none'
+          className='mr-3 ml-2.5 text-emerald-600 text-2xl font-black select-none'
           type='submit'
         >
           &#65291;
         </button>
         <input
-          className='bg-transparent outline-none'
+          className='bg-transparent outline-none font-light'
           type='text'
           name='item'
           placeholder='New item...'
@@ -281,20 +281,20 @@ export function NewItemLarge(props: {
 }) {
   if (props.activeListId !== 0) {
     return (
-      <div className='flex flex-row py-1.5 text-sm bg-gray-200 border-b border-gray-400'>
+      <div className='flex flex-row py-0.5 text-lg bg-white'>
         <form
           id='itemInput'
           className='flex flex-row w-full'
           onSubmit={props.createItemUpdate}
         >
           <button
-            className='mr-4 ml-3.5 text-green-500 font-black select-none'
+            className='mr-3 ml-2 text-emerald-600 text-3xl font-black select-none'
             type='submit'
           >
             &#65291;
           </button>
           <input
-            className='bg-transparent outline-none'
+            className='bg-transparent font-light outline-none'
             type='text'
             name='item'
             placeholder='New item...'

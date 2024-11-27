@@ -1,4 +1,4 @@
-import { space } from '../fonts';
+import { space, funnel, delius, atma, jolly, mukta } from '../fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { useState, useEffect, FormEvent } from 'react';
 import {
@@ -185,13 +185,22 @@ export default function Page({
   }
 
   return (
-    <main className={'flex h-screen w-full flex ' + space.className}>
-      <div className='flex flex-col w-full h-screen'>
-        <h1 className='flex w-full h-[50px] text-xl py-2 px-2 bg-gray-400 border-b border-black text-black select-none'>
-          To Do Lists
-        </h1>
+    <main
+      className={'flex h-screen w-full flex text-indigo-950 ' + mukta.className}
+    >
+      <div className='flex flex-col w-full md:px-8 h-screen'>
+        <div className='flex flex-col justify-center py-3 md:py-6 w-full bg-white'>
+          <h1
+            className={
+              'text-4xl md:text-5xl text-rose-950 px-4 font-semibold select-none ' +
+              jolly.className
+            }
+          >
+            to do
+          </h1>
+        </div>
         <div className='flex w-full h-full flex-col md:flex-row'>
-          <div className='flex h-full w-full flex-col md:max-w-[30%] overflow-hidden border-r border-gray-400'>
+          <div className='flex h-full w-full flex-col md:max-w-[25%] overflow-hidden md:mr-12 border-t border-indigo-100'>
             {activeListTitles.map((title) => {
               // Inactive list title
               if (activeListId !== parseInt(title.id)) {
@@ -238,7 +247,7 @@ export default function Page({
             <NewTitle createTitleUpdate={createTitleUpdate} />
           </div>
           {/* active list items - large screens */}
-          <div className='flex-col w-full h-full bg-gray-100 hidden md:flex'>
+          <div className='flex-col w-full h-full bg-white hidden md:flex'>
             {activeListItems.map((item) => {
               {
                 /* item - large screen */
