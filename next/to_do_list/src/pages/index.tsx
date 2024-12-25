@@ -1,4 +1,4 @@
-import { space, funnel, delius, atma, jolly, mukta } from '../fonts';
+import { jolly, mukta } from '../fonts';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { useState, useEffect, FormEvent } from 'react';
 import {
